@@ -28,4 +28,4 @@ ai: claude haiku (its buns ngl)
 
 license
 
-mit (do whatever u want with it)
+ask me 
