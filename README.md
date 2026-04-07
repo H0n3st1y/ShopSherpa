@@ -2,8 +2,7 @@ shopsherpa
 
 basically an ai fraud detector for when ur shopping online. you just point your camera at stuff and it checks like 1800 different fraud signals and gives u a score so u dont get scammed. built this with claude ai and node js.
 
-cool stuff it does
-
+what is does
 camera scanning: scan products in real-time
 fraud scores: gives u a rating + analysis from claude
 seller risk: tells u if the seller is sketchy or not
