@@ -1,0 +1,1077 @@
+cla<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>ShopSherpa</title>
+<!-- PWA -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ShopSherpa">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#083328">
+<link rel="manifest" href="/manifest.json">
+<!-- Apple touch icons (server.js will serve these, fallback to inline SVG) -->
+<link rel="apple-touch-icon" href="/icon-180.png">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{--g:#1d9e75;--gd:#0d4f3c;--gdk:#083328;--am:#F59E0B;--re:#EF4444;--bl:#3B82F6;--ink:#0D1117;--mu:#6B7280;--fa:#9CA3AF;--bg:#F4F6F9;--sf:#fff;--br:#EAECF0;--dv:#F3F4F6;--sh:0 1px 4px rgba(0,0,0,.07),0 0 0 1px rgba(0,0,0,.04);--shl:0 8px 32px rgba(0,0,0,.12);}
+html{height:-webkit-fill-available;}
+html,body{height:100%;overflow:hidden;}
+/* ── DEFAULT: full screen (mobile-first) ── */
+body{min-height:100vh;min-height:-webkit-fill-available;background:var(--gdk);display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;padding:0;color:var(--ink);}
+.phone{width:100vw;height:100vh;height:-webkit-fill-available;height:100dvh;background:transparent;border-radius:0;padding:0;box-shadow:none;position:relative;flex-shrink:0;}
+.btn-vol,.btn-pwr,.island{display:none;}
+.sw{border-radius:0;width:100%;height:100%;}
+.screen{border-radius:0;}
+.sbar{padding-top:calc(env(safe-area-inset-top,44px) + 4px);}
+.scroll{padding-bottom:calc(90px + env(safe-area-inset-bottom,20px))!important;padding-top:calc(env(safe-area-inset-top,44px) + 44px)!important;}
+.nav{padding-bottom:calc(8px + env(safe-area-inset-bottom,20px));}
+.auth-wrap{padding-top:env(safe-area-inset-top,44px);}
+.ob-wrap .ob-slide{padding-top:calc(env(safe-area-inset-top,44px) + 20px);}
+/* ── DESKTOP ONLY: show the phone mockup ── */
+@media (min-width:769px) and (pointer:fine){
+  body{background:#0a0a0a;padding:40px 20px;}
+  .phone{width:320px;height:680px;background:#1a1a1a;border-radius:52px;padding:9px;box-shadow:0 0 0 1px #2a2a2a,0 0 0 3px #1a1a1a,0 80px 160px rgba(0,0,0,.98),inset 0 1px 0 rgba(255,255,255,.08);}
+  .btn-vol,.btn-pwr,.island{display:block;}
+  .sw{border-radius:44px;}
+  .screen{border-radius:44px;}
+  .sbar{padding-top:12px;}
+  .scroll{padding-bottom:80px!important;padding-top:44px!important;}
+  .nav{padding-bottom:20px;}
+  .auth-wrap{padding-top:0;}
+  .ob-wrap .ob-slide{padding-top:28px;}
+}
+.phone{position:relative;flex-shrink:0;}
+.btn-vol{position:absolute;background:#1e1e1e;border-radius:2px;left:-3px;}
+.btn-vol.v1{top:96px;width:3px;height:26px;} .btn-vol.v2{top:130px;width:3px;height:26px;}
+.btn-pwr{position:absolute;background:#1e1e1e;border-radius:2px;right:-3px;top:116px;width:3px;height:42px;}
+.sw{width:100%;height:100%;background:var(--bg);border-radius:0;overflow:hidden;position:relative;}
+.island{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:84px;height:22px;background:#1a1a1a;border-radius:18px;z-index:900;}
+.sbar{position:absolute;top:0;left:0;right:0;padding:12px 20px 0;display:flex;justify-content:space-between;align-items:center;z-index:800;pointer-events:none;}
+.sbar-t{font-size:12px;font-weight:700;letter-spacing:-.3px;}
+.sbar-i{display:flex;align-items:center;gap:4px;}
+/* SCREENS */
+.screen{position:absolute;inset:0;display:none;flex-direction:column;overflow:hidden;background:var(--bg);opacity:0;transform:translateX(20px);transition:opacity .22s ease,transform .22s ease;}
+.screen.on{display:flex;opacity:1;transform:none;}
+.scroll{flex:1;overflow-y:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+.scroll::-webkit-scrollbar{display:none;}
+/* NAV */
+.nav{position:absolute;bottom:0;left:0;right:0;background:rgba(255,255,255,.97);backdrop-filter:blur(20px);border-top:1px solid rgba(0,0,0,.06);padding:8px 0 20px;display:flex;justify-content:space-around;align-items:center;z-index:100;}
+.ni{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:2px 10px;transition:transform .1s;position:relative;}
+.ni:active{transform:scale(.86);}
+.ni-lbl{font-size:10px;font-weight:500;color:var(--fa);letter-spacing:.1px;transition:color .15s;}
+.ni-lbl.a{color:var(--g);}
+.ni-pip{position:absolute;top:-1px;right:5px;width:5px;height:5px;background:var(--re);border-radius:50%;border:1.5px solid #fff;}
+/* TYPOGRAPHY */
+.page-title{font-size:20px;font-weight:700;color:var(--ink);letter-spacing:-.5px;}
+.sh{font-size:10px;font-weight:700;letter-spacing:1.2px;color:var(--fa);text-transform:uppercase;padding:0 18px;margin:18px 0 8px;}
+/* CARDS */
+.card{background:var(--sf);border-radius:16px;padding:16px;margin:0 14px 10px;box-shadow:var(--sh);}
+.card-tap{cursor:pointer;transition:transform .1s,box-shadow .1s;} .card-tap:active{transform:scale(.98);}
+.surface-row{background:var(--sf);border-radius:16px;margin:0 14px 10px;overflow:hidden;box-shadow:var(--sh);}
+/* BUTTONS */
+.btn{width:100%;background:var(--g);color:#fff;border:none;border-radius:14px;padding:14px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;letter-spacing:-.1px;}
+.btn:active{transform:scale(.97);}
+.btn2{width:100%;background:transparent;color:var(--mu);border:1.5px solid var(--br);border-radius:14px;padding:13px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.btn2:active{background:var(--bg);}
+.ghost-btn{background:transparent;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:opacity .15s;}
+.icon-btn{width:36px;height:36px;background:var(--sf);border:none;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--sh);transition:transform .1s;flex-shrink:0;}
+.icon-btn:active{transform:scale(.88);}
+/* INPUTS */
+.input-label{font-size:11px;font-weight:600;color:var(--mu);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;display:block;}
+.input{width:100%;background:var(--bg);border:1.5px solid var(--br);border-radius:12px;padding:12px 14px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--ink);outline:none;transition:border-color .15s,box-shadow .15s;}
+.input:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(29,158,117,.12);}
+.input::placeholder{color:var(--fa);}
+/* PILLS / TAGS */
+.pill{display:inline-flex;align-items:center;border-radius:20px;padding:4px 10px;font-size:11px;font-weight:600;}
+.pg{background:rgba(29,158,117,.1);color:var(--g);} .pa{background:rgba(245,158,11,.1);color:var(--am);}
+.pr{background:rgba(239,68,68,.1);color:var(--re);} .pb{background:rgba(59,130,246,.1);color:var(--bl);}
+.tag{display:inline-flex;align-items:center;border-radius:7px;padding:3px 7px;font-size:10px;font-weight:600;}
+.tg{background:rgba(29,158,117,.1);color:var(--g);} .ty{background:rgba(245,158,11,.1);color:var(--am);}
+.tr{background:rgba(239,68,68,.1);color:var(--re);} .tb{background:rgba(59,130,246,.1);color:var(--bl);}
+.tgr{background:#F3F4F6;color:var(--mu);}
+/* STATS */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 14px;margin-bottom:6px;}
+.stat-card{background:var(--sf);border-radius:16px;padding:15px 14px;box-shadow:var(--sh);}
+.stat-val{font-size:22px;font-weight:700;font-family:'DM Mono',monospace;color:var(--ink);line-height:1;letter-spacing:-.5px;}
+.stat-lbl{font-size:10px;font-weight:600;color:var(--fa);margin-top:6px;text-transform:uppercase;letter-spacing:.8px;}
+/* HERO */
+.hero-card{background:linear-gradient(135deg,#083328 0%,#0d4f3c 40%,#1a7a5e 100%);border-radius:20px;padding:20px;margin:0 14px 14px;position:relative;overflow:hidden;}
+.hero-card::before{content:'';position:absolute;top:-40px;right:-20px;width:130px;height:130px;background:rgba(255,255,255,.05);border-radius:50%;}
+.hero-card::after{content:'';position:absolute;bottom:-20px;left:50px;width:80px;height:80px;background:rgba(255,255,255,.04);border-radius:50%;}
+/* SCAN LIMIT */
+.scan-limit-bar{background:var(--sf);border-radius:14px;padding:12px 14px;margin:0 14px 10px;display:flex;align-items:center;gap:10px;box-shadow:var(--sh);border:1.5px solid var(--br);}
+.sl-track{flex:1;height:6px;background:var(--bg);border-radius:3px;overflow:hidden;}
+.sl-fill{height:100%;border-radius:3px;background:var(--g);transition:width .6s ease;}
+.sl-fill.warn{background:var(--am);} .sl-fill.crit{background:var(--re);}
+/* TREND */
+.trend-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--dv);}
+.trend-item:last-child{border-bottom:none;padding-bottom:0;}
+.trend-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.trend-bw{flex:1;} .trend-name{font-size:11px;font-weight:500;color:var(--ink);margin-bottom:3px;}
+.trend-track{height:5px;background:var(--bg);border-radius:3px;overflow:hidden;}
+.trend-fill{height:100%;border-radius:3px;transition:width 1s ease;}
+/* ROWS */
+.ri{display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--dv);cursor:pointer;transition:background .1s;}
+.ri:last-child{border-bottom:none;} .ri:active{background:var(--bg);}
+.ri-ic{width:40px;height:40px;background:var(--bg);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;}
+.ri-name{color:var(--ink);font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ri-meta{color:var(--fa);font-size:11px;margin-top:2px;}
+.ri-sc{font-size:12px;font-weight:700;font-family:'DM Mono',monospace;padding:5px 9px;border-radius:8px;flex-shrink:0;}
+.sc-h{color:var(--g);background:rgba(29,158,117,.1);} .sc-m{color:var(--am);background:rgba(245,158,11,.1);} .sc-l{color:var(--re);background:rgba(239,68,68,.1);}
+.hcard{background:var(--sf);border-radius:14px;padding:13px;margin:0 14px 8px;display:flex;align-items:center;gap:12px;box-shadow:var(--sh);cursor:pointer;transition:transform .1s;}
+.hcard:active{transform:scale(.98);}
+/* CHECKS */
+.ci{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+.ci-p{background:rgba(29,158,117,.12);color:var(--g);} .ci-w{background:rgba(245,158,11,.12);color:var(--am);} .ci-f{background:rgba(239,68,68,.12);color:var(--re);}
+.chk{background:var(--sf);border-radius:12px;padding:12px 14px;display:flex;align-items:flex-start;gap:11px;margin:0 14px 8px;box-shadow:var(--sh);}
+.ct-t{color:var(--ink);font-size:13px;font-weight:500;} .ct-s{color:var(--mu);font-size:11px;margin-top:3px;line-height:1.45;}
+/* SCORE */
+.sh-num{font-size:52px;font-weight:700;font-family:'DM Mono',monospace;line-height:1;letter-spacing:-2px;}
+.col-green{color:var(--g);} .col-amber{color:var(--am);} .col-red{color:var(--re);}
+.score-hero{border-radius:16px;padding:18px;margin:0 14px 10px;display:flex;align-items:center;justify-content:space-between;}
+.score-safe{background:linear-gradient(135deg,#F0FDF9,#DCFCE7);border:1px solid rgba(29,158,117,.2);}
+.score-warn{background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border:1px solid rgba(245,158,11,.2);}
+.score-danger{background:linear-gradient(135deg,#FFF1F1,#FEE2E2);border:1px solid rgba(239,68,68,.2);}
+/* CHART */
+.chart-box{background:var(--sf);border-radius:16px;margin:0 14px 10px;padding:16px;box-shadow:var(--sh);}
+.chart-price-big{font-size:24px;font-weight:700;font-family:'DM Mono',monospace;color:var(--ink);letter-spacing:-1px;}
+.chart-delta{font-size:12px;font-weight:500;margin-top:3px;}
+.chart-delta.up{color:var(--g);} .chart-delta.dn{color:var(--re);}
+.range-tabs{display:flex;gap:2px;margin:10px 0;}
+.rt{flex:1;padding:5px 0;font-size:10px;font-weight:600;border:none;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;background:transparent;color:var(--fa);transition:all .15s;}
+.rt.on{background:var(--ink);color:#fff;}
+svg.pchart{width:100%;height:88px;overflow:visible;}
+/* CAMERA */
+#camVid{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:2;}
+#snapCanvas{display:none;}
+.corner{position:absolute;width:22px;height:22px;border-color:#fff;border-style:solid;}
+.c-tl{top:0;left:0;border-width:2.5px 0 0 2.5px;border-radius:3px 0 0 0;} .c-tr{top:0;right:0;border-width:2.5px 2.5px 0 0;border-radius:0 3px 0 0;}
+.c-bl{bottom:0;left:0;border-width:0 0 2.5px 2.5px;border-radius:0 0 0 3px;} .c-br{bottom:0;right:0;border-width:0 2.5px 2.5px 0;border-radius:0 0 3px 0;}
+.scan-line{position:absolute;left:8px;right:8px;height:1.5px;background:linear-gradient(90deg,transparent,rgba(29,158,117,.9),transparent);animation:scanAnim 2s ease-in-out infinite;}
+@keyframes scanAnim{0%{top:4%;opacity:1}90%{top:92%;opacity:1}100%{top:4%;opacity:0}}
+/* ANALYZING */
+.ring-outer{width:64px;height:64px;border:2.5px solid var(--br);border-top-color:var(--g);border-radius:50%;animation:spin .8s linear infinite;}
+.ring-inner{position:absolute;inset:9px;border:2px solid rgba(29,158,117,.1);border-bottom-color:var(--g);border-radius:50%;animation:spin 1.4s linear infinite reverse;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.astep{display:flex;align-items:center;gap:10px;opacity:.18;transition:opacity .35s;padding:5px 0;}
+.astep.on{opacity:1;} .astep.done{opacity:.4;}
+.adot{width:7px;height:7px;border-radius:50%;background:#D1D5DB;flex-shrink:0;transition:background .3s;}
+.astep.on .adot,.astep.done .adot{background:var(--g);}
+.atxt{font-size:13px;color:var(--ink);}
+/* TOGGLE */
+.tog{width:42px;height:24px;border-radius:12px;background:#D1D5DB;cursor:pointer;position:relative;transition:background .25s;flex-shrink:0;}
+.tog.on{background:var(--g);}
+.tog-thumb{position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:left .22s cubic-bezier(.34,1.56,.64,1);box-shadow:0 1px 4px rgba(0,0,0,.18);}
+.tog.on .tog-thumb{left:21px;}
+/* MENU */
+.mi-list{background:var(--sf);border-radius:16px;margin:0 14px 10px;overflow:hidden;box-shadow:var(--sh);}
+.mi{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--dv);cursor:pointer;transition:background .1s;}
+.mi:last-child{border-bottom:none;} .mi:active{background:var(--bg);}
+.mi-ic{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+/* BC BARS */
+.bc-track{flex:1;height:7px;background:var(--bg);border-radius:4px;overflow:hidden;}
+.bc-fill{height:100%;border-radius:4px;transition:width .8s ease;}
+/* FILTER CHIPS */
+.filter-scroll{display:flex;gap:6px;padding:0 14px 14px;overflow-x:auto;scrollbar-width:none;}
+.filter-scroll::-webkit-scrollbar{display:none;}
+.f-chip{background:var(--sf);border:1.5px solid var(--br);border-radius:20px;padding:7px 14px;color:var(--mu);font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:all .15s;}
+.f-chip.on{background:var(--ink);border-color:var(--ink);color:#fff;}
+/* PROFILE */
+.profile-hero{background:linear-gradient(135deg,var(--gdk),var(--gd) 50%,#1a7a5e);border-radius:20px;padding:22px;margin:0 14px 14px;text-align:center;}
+.ref-card{background:linear-gradient(135deg,var(--gdk),#1a7a5e);border-radius:20px;padding:20px;margin:0 14px 12px;position:relative;overflow:hidden;}
+.ref-card::before{content:'';position:absolute;top:-30px;right:-20px;width:100px;height:100px;background:rgba(255,255,255,.05);border-radius:50%;}
+.ref-code{background:rgba(255,255,255,.14);border:1px dashed rgba(255,255,255,.3);border-radius:12px;padding:12px 16px;text-align:center;margin:14px 0 0;}
+/* ALERTS */
+.alert-card{background:var(--sf);border-radius:14px;padding:14px;margin:0 14px 8px;box-shadow:var(--sh);display:flex;align-items:center;gap:12px;}
+.alert-ic{width:44px;height:44px;background:var(--bg);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+/* FRAUD ALERT */
+.fraud-alert{background:#FFF1F1;border:1.5px solid rgba(239,68,68,.18);border-radius:16px;padding:14px;margin:0 14px 10px;}
+/* OVERLAYS */
+.notif-panel{position:absolute;inset:0;background:rgba(0,0,0,.35);z-index:850;display:none;align-items:flex-start;justify-content:center;padding-top:54px;}
+.notif-panel.open{display:flex;animation:fadeIn .2s ease;}
+.notif-drawer{background:var(--sf);border-radius:22px;width:92%;max-height:68%;overflow-y:auto;scrollbar-width:none;padding:18px;box-shadow:var(--shl);}
+.notif-drawer::-webkit-scrollbar{display:none;}
+.nitem{background:var(--bg);border-radius:12px;padding:12px;display:flex;gap:10px;margin-bottom:8px;cursor:pointer;transition:opacity .1s;}
+.nitem:last-child{margin-bottom:0;} .nitem:active{opacity:.7;} .nitem.unread{background:#F0FDF9;}
+.paywall-overlay{position:absolute;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(5px);z-index:900;display:none;align-items:flex-end;justify-content:center;}
+.paywall-overlay.open{display:flex;animation:slideUp .35s cubic-bezier(.4,0,.2,1);}
+@keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.paywall-sheet{background:var(--sf);border-radius:28px 28px 44px 44px;width:100%;padding:22px 20px 28px;overflow-y:auto;max-height:90%;scrollbar-width:none;}
+.paywall-sheet::-webkit-scrollbar{display:none;}
+.plan-option{border:2px solid var(--br);border-radius:14px;padding:14px;margin-bottom:8px;cursor:pointer;transition:all .15s;position:relative;}
+.plan-option.selected{border-color:var(--g);background:rgba(29,158,117,.04);}
+.plan-badge{position:absolute;top:-1px;right:12px;background:var(--g);color:#fff;font-size:9px;font-weight:700;padding:3px 8px;border-radius:0 0 6px 6px;letter-spacing:.5px;}
+/* ONBOARDING */
+.ob-wrap{position:absolute;inset:0;z-index:850;overflow:hidden;}
+.ob-slide{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:28px 28px 36px;text-align:center;transition:opacity .4s cubic-bezier(.4,0,.2,1),transform .4s cubic-bezier(.4,0,.2,1);}
+.ob-slide.out{opacity:0;transform:translateX(-36px);pointer-events:none;}
+.ob-illus{flex:1;display:flex;align-items:center;justify-content:center;width:100%;}
+.ob-dot{width:6px;height:6px;border-radius:50%;transition:all .3s;}
+.ob-dot-w{background:rgba(255,255,255,.3);} .ob-dot-w.on{background:#fff;width:20px;border-radius:3px;}
+.ob-dot-d{background:var(--br);} .ob-dot-d.on{background:var(--g);width:20px;border-radius:3px;}
+/* AUTH */
+.auth-wrap{position:absolute;inset:0;z-index:860;background:var(--bg);display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:none;transition:opacity .3s ease,transform .3s ease;}
+.auth-wrap.hidden{opacity:0;transform:translateX(28px);pointer-events:none;display:none;}
+.auth-wrap::-webkit-scrollbar{display:none;}
+/* TOAST */
+.toast{position:absolute;bottom:96px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--ink);color:#fff;border-radius:12px;padding:10px 18px;font-size:12px;font-weight:500;white-space:nowrap;z-index:999;opacity:0;transition:opacity .25s ease,transform .25s ease;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.25);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.success{background:var(--g);} .toast.error{background:var(--re);}
+/* NOCAM */
+#noCam{display:none;position:absolute;inset:0;background:var(--bg);z-index:15;flex-direction:column;align-items:center;justify-content:center;padding:28px;text-align:center;}
+/* PAGE HEADER */
+.ph{display:flex;align-items:center;justify-content:space-between;padding:6px 18px 12px;}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="btn-vol v1"></div><div class="btn-vol v2"></div><div class="btn-pwr"></div>
+  <div class="sw" id="sw">
+    <div class="island"></div>
+    <div class="sbar" id="sbar">
+      <span class="sbar-t" id="clk" style="color:var(--ink)">9:41</span>
+      <div class="sbar-i" style="color:var(--ink)">
+        <svg width="14" height="10" viewBox="0 0 15 11"><rect x="0" y="5" width="3" height="6" rx="1" fill="currentColor" opacity=".3"/><rect x="4" y="3.5" width="3" height="7.5" rx="1" fill="currentColor" opacity=".55"/><rect x="8" y="1.5" width="3" height="9.5" rx="1" fill="currentColor" opacity=".75"/><rect x="12" y="0" width="3" height="11" rx="1" fill="currentColor"/></svg>
+        <svg width="13" height="10" viewBox="0 0 18 13" fill="none"><path d="M9 2.5C11.2 2.5 13.2 3.4 14.7 4.9L16.2 3.4C14.2 1.3 11.3 0 9 0S3.8 1.3 1.8 3.4L3.3 4.9C4.8 3.4 6.8 2.5 9 2.5Z" fill="currentColor" opacity=".3"/><path d="M9 5.5c1.5 0 2.9.6 3.9 1.6L14.3 5.7C12.8 4.2 11 3.2 9 3.2S5.2 4.2 3.7 5.7L5.1 7.1C6.1 6.1 7.5 5.5 9 5.5Z" fill="currentColor" opacity=".65"/><circle cx="9" cy="10.5" r="2" fill="currentColor"/></svg>
+        <svg width="22" height="10" viewBox="0 0 23 11" fill="none"><rect x=".5" y=".5" width="20" height="10" rx="2.5" stroke="currentColor" stroke-opacity=".35"/><rect x="1.5" y="1.5" width="14" height="8" rx="1.5" fill="currentColor"/><path d="M21.5 3.5v4a2 2 0 000-4z" fill="currentColor" opacity=".4"/></svg>
+      </div>
+    </div>
+
+    <!-- ONBOARDING -->
+    <div class="ob-wrap" id="onboarding">
+      <div class="ob-slide" id="obs0" style="background:linear-gradient(160deg,#083328,#0d4f3c 55%,#1a7a5e);">
+        <div class="ob-illus" style="flex-direction:column;gap:20px;">
+          <img src="/logo.png" alt="ShopSherpa" style="width:160px;height:160px;object-fit:contain;border-radius:28px;background:#fff;padding:16px;box-shadow:0 20px 60px rgba(0,0,0,.35);"/>
+          <div style="color:#fff;font-size:28px;font-weight:700;letter-spacing:-.5px;">ShopSherpa</div>
+        </div>
+        <div style="margin-bottom:24px;width:100%;">
+          <div style="display:flex;justify-content:center;gap:7px;margin-bottom:22px;"><div class="ob-dot ob-dot-w on"></div><div class="ob-dot ob-dot-w"></div><div class="ob-dot ob-dot-w"></div></div>
+          <div style="color:#fff;font-size:23px;font-weight:700;margin-bottom:9px;letter-spacing:-.5px;">Detect Fraud Instantly</div>
+          <div style="color:rgba(255,255,255,.62);font-size:13px;line-height:1.65;margin-bottom:24px;">Point your camera at any product. Claude AI cross-references 1,800+ fraud signals in seconds.</div>
+          <button onclick="obGo(1)" class="btn" style="background:#fff;color:#083328;font-weight:700;margin-bottom:10px;">Get Started →</button>
+          <button onclick="obDone()" class="ghost-btn" style="color:rgba(255,255,255,.35);font-size:12px;width:100%;padding:6px;">Skip intro</button>
+        </div>
+      </div>
+      <div class="ob-slide out" id="obs1" style="background:var(--bg);">
+        <div class="ob-illus">
+          <svg width="210" height="195" viewBox="0 0 210 195" fill="none">
+            <rect x="15" y="15" width="180" height="165" rx="22" fill="#fff" stroke="#EAECF0" stroke-width="1.5"/>
+            <rect x="30" y="32" width="150" height="42" rx="12" fill="#F4F6F9"/>
+            <circle cx="52" cy="53" r="12" fill="#1d9e75" opacity=".15"/>
+            <path d="M47 53l4 4 8-8" stroke="#1d9e75" stroke-width="1.8" stroke-linecap="round"/>
+            <rect x="70" y="45" width="68" height="8" rx="4" fill="#0D1117" opacity=".1"/>
+            <rect x="70" y="57" width="44" height="6" rx="3" fill="#9CA3AF" opacity=".35"/>
+            <text x="162" y="57" font-size="9" font-weight="700" fill="#1d9e75" text-anchor="middle">92%</text>
+            <rect x="30" y="87" width="150" height="78" rx="12" fill="#F4F6F9"/>
+            <text x="42" y="103" font-family="monospace" font-size="12" fill="#0D1117" font-weight="700">$89.99</text>
+            <text x="42" y="115" font-size="9" fill="#1d9e75">▲ +$3.50 this month</text>
+            <polyline points="40,155 55,147 70,152 88,140 104,143 120,133 136,136 148,128 162,131" stroke="#1d9e75" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M40 155 55 147 70 152 88 140 104 143 120 133 136 136 148 128 162 131 162 162 40 162Z" fill="url(#cg)" opacity=".25"/>
+            <defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#1d9e75"/><stop offset="1" stop-color="#1d9e75" stop-opacity="0"/></linearGradient></defs>
+          </svg>
+        </div>
+        <div style="margin-bottom:24px;width:100%;">
+          <div style="display:flex;justify-content:center;gap:7px;margin-bottom:22px;"><div class="ob-dot ob-dot-d"></div><div class="ob-dot ob-dot-d on"></div><div class="ob-dot ob-dot-d"></div></div>
+          <div style="color:var(--ink);font-size:23px;font-weight:700;margin-bottom:9px;letter-spacing:-.5px;">Track Price History</div>
+          <div style="color:var(--mu);font-size:13px;line-height:1.65;margin-bottom:24px;">See real price history and get instant alerts when products you're watching drop to a better deal.</div>
+          <button onclick="obGo(2)" class="btn" style="margin-bottom:10px;">Continue →</button>
+          <button onclick="obDone()" class="ghost-btn" style="color:var(--fa);font-size:12px;width:100%;padding:6px;">Skip intro</button>
+        </div>
+      </div>
+      <div class="ob-slide out" id="obs2" style="background:var(--bg);">
+        <div class="ob-illus">
+          <svg width="200" height="190" viewBox="0 0 200 190" fill="none">
+            <circle cx="100" cy="86" r="60" fill="rgba(29,158,117,.08)"/>
+            <circle cx="100" cy="86" r="44" fill="rgba(29,158,117,.12)"/>
+            <circle cx="100" cy="86" r="30" fill="#1d9e75"/>
+            <path d="M88 86l9 9 17-17" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="100" cy="32" r="7" fill="#1d9e75" opacity=".35"/>
+            <circle cx="148" cy="62" r="6" fill="#1d9e75" opacity=".28"/>
+            <circle cx="140" cy="120" r="8" fill="#1d9e75" opacity=".45"/>
+            <circle cx="56" cy="116" r="5" fill="#1d9e75" opacity=".28"/>
+            <circle cx="50" cy="60" r="7" fill="#1d9e75" opacity=".35"/>
+            <rect x="20" y="152" width="160" height="30" rx="15" fill="#0D1117"/>
+            <text x="100" y="172" font-family="'DM Sans',sans-serif" font-size="11" font-weight="600" fill="#fff" text-anchor="middle">Built for shoppers, not retailers</text>
+          </svg>
+        </div>
+        <div style="margin-bottom:24px;width:100%;">
+          <div style="display:flex;justify-content:center;gap:7px;margin-bottom:22px;"><div class="ob-dot ob-dot-d"></div><div class="ob-dot ob-dot-d"></div><div class="ob-dot ob-dot-d on"></div></div>
+          <div style="color:var(--ink);font-size:23px;font-weight:700;margin-bottom:9px;letter-spacing:-.5px;">Shop Safe, Every Time</div>
+          <div style="color:var(--mu);font-size:13px;line-height:1.65;margin-bottom:24px;">ShopSherpa is on your side. We flag scams even when it means telling you <em>not</em> to buy.</div>
+          <button onclick="obDone()" class="btn" style="margin-bottom:10px;">Start Protecting Me →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- AUTH SIGN IN -->
+    <div class="auth-wrap hidden" id="authSI">
+      <div style="padding:56px 24px 32px;">
+        <div style="text-align:center;margin-bottom:34px;">
+          <img src="/logo.png" alt="ShopSherpa" style="width:64px;height:64px;object-fit:contain;border-radius:16px;margin:0 auto 14px;display:block;background:#fff;padding:8px;box-shadow:0 4px 16px rgba(0,0,0,.1);"/>
+          <div style="color:var(--ink);font-size:22px;font-weight:700;letter-spacing:-.5px;">Welcome back</div>
+          <div style="color:var(--mu);font-size:13px;margin-top:4px;">Sign in to your account</div>
+        </div>
+        <label class="input-label">Email</label>
+        <div style="margin-bottom:12px;"><input class="input" id="si-email" type="email" placeholder="you@example.com"/></div>
+        <label class="input-label">Password</label>
+        <div style="position:relative;margin-bottom:4px;">
+          <input class="input" id="si-pass" type="password" placeholder="••••••••" style="padding-right:44px;"/>
+          <span onclick="togglePass('si-pass',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:14px;">👁</span>
+        </div>
+        <div style="text-align:right;margin-bottom:20px;"><button class="ghost-btn" style="color:var(--g);font-size:12px;font-weight:600;padding:6px 0;">Forgot password?</button></div>
+        <button class="btn" onclick="doSignIn()" id="si-btn" style="margin-bottom:14px;">Sign In</button>
+        <div style="text-align:center;color:var(--mu);font-size:12px;">Don't have an account? <button class="ghost-btn" onclick="showAuth('authSU')" style="color:var(--g);font-weight:600;font-size:12px;margin-left:3px;">Create one →</button></div>
+        <div style="display:flex;align-items:center;gap:10px;margin:18px 0;"><div style="flex:1;height:1px;background:var(--br);"></div><span style="color:var(--fa);font-size:11px;font-weight:500;">or</span><div style="flex:1;height:1px;background:var(--br);"></div></div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="doSignIn()" style="flex:1;background:var(--sf);border:1.5px solid var(--br);border-radius:12px;padding:11px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--ink);display:flex;align-items:center;justify-content:center;gap:7px;">
+            <svg width="16" height="16" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+            Google
+          </button>
+          <button onclick="doSignIn()" style="flex:1;background:var(--ink);border:none;border-radius:12px;padding:11px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;color:#fff;display:flex;align-items:center;justify-content:center;gap:7px;">
+            <svg width="13" height="16" viewBox="0 0 14 17" fill="white"><path d="M13.4 12.1c-.3.8-.7 1.5-1.2 2.2-.6.9-1.1 1.5-1.6 1.8-.6.6-1.3.9-2 .9s-1.2-.2-1.8-.5c-.6-.3-1.1-.5-1.6-.5s-1 .2-1.6.5c-.6.3-1.1.5-1.6.5-.7 0-1.3-.3-2-.9C.7 15.3.1 14.3-.5 13c-.6-1.3-.8-2.7-.8-4 0-1.5.3-2.7 1-3.8.5-.9 1.2-1.6 2.1-2.1.9-.5 1.8-.7 2.8-.7 1 0 1.8.2 2.6.7.5.3.9.5 1.1.5.2 0 .7-.2 1.3-.6C10.4 2.7 11.3 2.5 12.1 2.6c1.5.1 2.6.7 3.3 1.8-.8.5-1.5 1.2-1.9 2-.4.8-.6 1.7-.6 2.7 0 1 .2 2 .7 2.8.3.6.7 1.1 1.1 1.4l-.3.8zm-3.2-12c0 .8-.3 1.6-.8 2.3-.6.8-1.4 1.3-2.2 1.2 0-.1 0-.2-.1-.3 0-1.4 1-2.7 1.5-3.1.5-.5 1.2-.8 1.5-.8.1.3.1.5.1.7z"/></svg>
+            Apple
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- AUTH SIGN UP -->
+    <div class="auth-wrap hidden" id="authSU">
+      <div style="padding:56px 24px 32px;">
+        <div style="text-align:center;margin-bottom:28px;">
+          <img src="/logo.png" alt="ShopSherpa" style="width:64px;height:64px;object-fit:contain;border-radius:16px;margin:0 auto 14px;display:block;background:#fff;padding:8px;box-shadow:0 4px 16px rgba(0,0,0,.1);"/>
+          <div style="color:var(--ink);font-size:22px;font-weight:700;letter-spacing:-.5px;">Create account</div>
+          <div style="color:var(--mu);font-size:13px;margin-top:4px;">Start protecting your purchases</div>
+        </div>
+        <label class="input-label">Full Name</label>
+        <div style="margin-bottom:12px;"><input class="input" id="su-name" type="text" placeholder="Your full name"/></div>
+        <label class="input-label">Email</label>
+        <div style="margin-bottom:12px;"><input class="input" id="su-email" type="email" placeholder="you@example.com"/></div>
+        <label class="input-label">Password</label>
+        <div style="position:relative;margin-bottom:6px;">
+          <input class="input" id="su-pass" type="password" placeholder="Min. 8 characters" style="padding-right:44px;"/>
+          <span onclick="togglePass('su-pass',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:14px;">👁</span>
+        </div>
+        <div style="display:flex;gap:3px;margin-bottom:16px;" id="pw-str">
+          <div style="flex:1;height:3px;border-radius:2px;background:var(--br);" id="ps0"></div><div style="flex:1;height:3px;border-radius:2px;background:var(--br);" id="ps1"></div><div style="flex:1;height:3px;border-radius:2px;background:var(--br);" id="ps2"></div><div style="flex:1;height:3px;border-radius:2px;background:var(--br);" id="ps3"></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:20px;padding:10px 12px;background:rgba(29,158,117,.06);border-radius:10px;border:1px solid rgba(29,158,117,.15);">
+          <div class="tog" id="tos-tog" onclick="this.classList.toggle('on')" style="margin-top:1px;flex-shrink:0;"><div class="tog-thumb"></div></div>
+          <div style="font-size:11px;color:var(--mu);line-height:1.5;">I agree to the <span style="color:var(--g);font-weight:600;">Terms of Service</span> and <span style="color:var(--g);font-weight:600;">Privacy Policy</span>. Your data is never sold.</div>
+        </div>
+        <button class="btn" onclick="doSignUp()" style="margin-bottom:12px;">Create Free Account</button>
+        <div style="text-align:center;color:var(--mu);font-size:12px;">Already have an account? <button class="ghost-btn" onclick="showAuth('authSI')" style="color:var(--g);font-weight:600;font-size:12px;margin-left:3px;">Sign in →</button></div>
+      </div>
+    </div>
+
+    <!-- HOME -->
+    <div class="screen on" id="scHome">
+      <div class="scroll" style="padding-top:44px;padding-bottom:90px;">
+        <div class="ph">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <img src="/logo.png" alt="ShopSherpa" style="width:36px;height:36px;object-fit:contain;border-radius:10px;background:#fff;padding:4px;box-shadow:0 2px 8px rgba(0,0,0,.1);"/>
+            <div><div style="color:var(--ink);font-weight:700;font-size:18px;letter-spacing:-.4px;">ShopSherpa</div><div style="color:var(--fa);font-size:10px;font-weight:500;" id="home-greet">Good morning 👋</div></div>
+          </div>
+          <button class="icon-btn" onclick="openNotif()" style="position:relative;">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M10 2a6 6 0 00-6 6v3l-1.5 2.5h15L16 11V8a6 6 0 00-6-6z" stroke="var(--ink)" stroke-width="1.5"/><path d="M8 16a2 2 0 004 0" stroke="var(--ink)" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <div class="ni-pip"></div>
+          </button>
+        </div>
+        <div onclick="toast('Search coming in v2.0 🔍')" style="background:var(--sf);border-radius:14px;padding:11px 14px;display:flex;align-items:center;gap:9px;margin:0 14px 12px;box-shadow:var(--sh);border:1.5px solid var(--br);cursor:pointer;">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5.5" stroke="var(--fa)" stroke-width="1.5"/><path d="M11 11l3 3" stroke="var(--fa)" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span style="color:var(--fa);font-size:13px;flex:1;">Search product or scan barcode...</span>
+          <span style="background:var(--bg);border-radius:6px;padding:3px 8px;font-size:10px;font-weight:600;color:var(--fa);">⌘K</span>
+        </div>
+        <div class="scan-limit-bar">
+          <div style="width:28px;height:28px;background:rgba(245,158,11,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">⚡</div>
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+              <span style="color:var(--ink);font-size:12px;font-weight:500;">Free scans this month</span>
+              <span style="color:var(--am);font-size:11px;font-weight:700;font-family:'DM Mono',monospace;" id="scan-lbl">4 / 5 used</span>
+            </div>
+            <div class="sl-track"><div class="sl-fill warn" id="scan-fill" style="width:80%;"></div></div>
+          </div>
+          <button onclick="openPaywall()" style="background:var(--g);color:#fff;border:none;border-radius:9px;padding:7px 11px;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;flex-shrink:0;">Go Pro</button>
+        </div>
+        <div class="hero-card card-tap" onclick="navTo('scCam')">
+          <div style="color:rgba(255,255,255,.45);font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:7px;">✦ CLAUDE AI POWERED</div>
+          <div style="color:#fff;font-size:18px;font-weight:700;margin-bottom:7px;letter-spacing:-.4px;">Scan Any Product</div>
+          <div style="color:rgba(255,255,255,.62);font-size:12px;line-height:1.6;margin-bottom:16px;">Point your camera at any product — Claude AI identifies it and generates a real-time fraud score instantly.</div>
+          <div style="background:#fff;color:#083328;border-radius:12px;padding:11px 18px;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:8px;">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><rect x="2" y="5" width="16" height="12" rx="2.5" stroke="#083328" stroke-width="1.8"/><circle cx="10" cy="11" r="3" stroke="#083328" stroke-width="1.8"/><path d="M7 5V4a1 1 0 011-1h4a1 1 0 011 1v1" stroke="#083328" stroke-width="1.8"/></svg>Scan Product
+          </div>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-val" style="color:var(--g);">47</div><div class="stat-lbl">Scans Done</div></div>
+          <div class="stat-card"><div class="stat-val" style="color:var(--g);">$1,240</div><div class="stat-lbl">Scams Avoided</div></div>
+          <div class="stat-card"><div class="stat-val">92%</div><div class="stat-lbl" style="color:var(--g);">Avg Safety</div></div>
+          <div class="stat-card"><div class="stat-val" style="color:var(--am);">9</div><div class="stat-lbl">Warnings</div></div>
+        </div>
+        <div class="sh" style="margin-top:16px;">🔥 Fraud Trends This Week</div>
+        <div class="card" style="padding:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><span style="color:var(--ink);font-size:13px;font-weight:600;">Most Faked Products</span><span class="tag tb">Mar 2025</span></div>
+          <div class="trend-item"><div class="trend-icon" style="background:rgba(239,68,68,.1);">🔌</div><div class="trend-bw"><div class="trend-name">USB-C Cables <span style="color:var(--re);font-size:10px;font-weight:700;">↑ 34%</span></div><div class="trend-track"><div class="trend-fill" style="width:0%;background:var(--re);" data-w="82%"></div></div></div><span style="font-size:10px;font-weight:700;color:var(--re);font-family:'DM Mono',monospace;flex-shrink:0;margin-left:8px;">High</span></div>
+          <div class="trend-item"><div class="trend-icon" style="background:rgba(245,158,11,.1);">👟</div><div class="trend-bw"><div class="trend-name">Designer Shoes <span style="color:var(--am);font-size:10px;font-weight:700;">↑ 21%</span></div><div class="trend-track"><div class="trend-fill" style="width:0%;background:var(--am);" data-w="55%"></div></div></div><span style="font-size:10px;font-weight:700;color:var(--am);font-family:'DM Mono',monospace;flex-shrink:0;margin-left:8px;">Med</span></div>
+          <div class="trend-item"><div class="trend-icon" style="background:rgba(245,158,11,.1);">💊</div><div class="trend-bw"><div class="trend-name">Supplements <span style="color:var(--am);font-size:10px;font-weight:700;">↑ 17%</span></div><div class="trend-track"><div class="trend-fill" style="width:0%;background:var(--am);" data-w="42%"></div></div></div><span style="font-size:10px;font-weight:700;color:var(--am);font-family:'DM Mono',monospace;flex-shrink:0;margin-left:8px;">Med</span></div>
+          <div class="trend-item"><div class="trend-icon" style="background:rgba(29,158,117,.1);">🧴</div><div class="trend-bw"><div class="trend-name">Skincare <span style="color:var(--g);font-size:10px;font-weight:700;">↓ 8%</span></div><div class="trend-track"><div class="trend-fill" style="width:0%;background:var(--g);" data-w="22%"></div></div></div><span style="font-size:10px;font-weight:700;color:var(--g);font-family:'DM Mono',monospace;flex-shrink:0;margin-left:8px;">Low</span></div>
+        </div>
+        <div class="sh" style="margin-top:4px;">Recent Scans</div>
+        <div class="surface-row">
+          <div class="ri" onclick="viewResult('earbuds')"><div class="ri-ic">🎧</div><div style="flex:1;min-width:0;"><div class="ri-name">Wireless Earbuds Pro X</div><div class="ri-meta">2 mins ago · Amazon</div></div><div class="ri-sc sc-h">92%</div></div>
+          <div class="ri" onclick="viewResult('cable')"><div class="ri-ic">🔌</div><div style="flex:1;min-width:0;"><div class="ri-name">Budget USB-C Cable 3-Pack</div><div class="ri-meta">14 mins ago · Amazon</div></div><div class="ri-sc sc-l">34%</div></div>
+          <div class="ri" onclick="viewResult('cream')"><div class="ri-ic">🧴</div><div style="flex:1;min-width:0;"><div class="ri-name">Organic Face Cream SPF 50</div><div class="ri-meta">1 hr ago · Amazon</div></div><div class="ri-sc sc-h">95%</div></div>
+          <div class="ri" onclick="viewResult('watch')"><div class="ri-ic">⌚</div><div style="flex:1;min-width:0;"><div class="ri-name">Smart Watch Series 5 Pro</div><div class="ri-meta">3 hrs ago · Amazon</div></div><div class="ri-sc sc-h">88%</div></div>
+        </div>
+        <div class="sh" style="margin-top:16px;">⚠️ Active Alert</div>
+        <div class="fraud-alert">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><div style="width:28px;height:28px;background:rgba(239,68,68,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;">🚨</div><span style="color:var(--re);font-size:13px;font-weight:700;">High-Risk Seller Detected</span></div>
+          <div style="color:var(--mu);font-size:12px;line-height:1.55;margin-bottom:10px;">ShopDirect99 has been flagged for multiple counterfeit listings. 3 active products from this seller.</div>
+          <button onclick="goTo('scSeller')" style="background:var(--re);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">View Seller Profile →</button>
+        </div>
+        <div style="height:8px;"></div>
+      </div>
+      <div class="nav" id="navHome"></div>
+    </div>
+
+    <!-- CAMERA -->
+    <div class="screen" id="scCam" style="background:#000;">
+      <video id="camVid" autoplay playsinline muted></video>
+      <canvas id="snapCanvas"></canvas>
+      <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.72)0%,transparent 28%,transparent 60%,rgba(0,0,0,.88)100%);z-index:3;pointer-events:none;"></div>
+      <div style="position:absolute;top:0;left:0;right:0;padding:46px 18px 0;display:flex;align-items:center;gap:12px;z-index:10;">
+        <button onclick="stopCam();goTo('scHome')" style="width:34px;height:34px;background:rgba(255,255,255,.14);border-radius:50%;border:none;color:#fff;font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;">←</button>
+        <span style="color:#fff;font-size:15px;font-weight:600;flex:1;">AI Product Scan</span>
+        <div style="background:rgba(29,158,117,.3);border:1px solid rgba(29,158,117,.6);border-radius:20px;padding:4px 12px;animation:cpulse 2s ease-in-out infinite;" ><span style="color:#5dcaa5;font-size:10px;font-weight:700;letter-spacing:.3px;">✦ LIVE · CLAUDE AI</span></div>
+      </div>
+      <style>@keyframes cpulse{0%,100%{opacity:.65}50%{opacity:1}}</style>
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:4;pointer-events:none;">
+        <div style="position:relative;width:220px;height:210px;margin-top:-30px;">
+          <div class="corner c-tl"></div><div class="corner c-tr"></div><div class="corner c-bl"></div><div class="corner c-br"></div>
+          <div class="scan-line"></div>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;"><div style="background:rgba(0,0,0,.4);border-radius:10px;padding:6px 12px;"><span style="color:rgba(255,255,255,.8);font-size:11px;font-weight:500;">Hold product in frame</span></div></div>
+        </div>
+      </div>
+      <div style="position:absolute;bottom:0;left:0;right:0;padding:12px 28px 34px;z-index:10;display:flex;justify-content:space-between;align-items:center;">
+        <button onclick="stopCam();goTo('scHome')" style="background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.2);border-radius:12px;padding:10px 16px;color:#fff;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">Cancel</button>
+        <div onclick="doAIScan()" style="width:70px;height:70px;background:var(--g);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;border:3.5px solid rgba(255,255,255,.22);box-shadow:0 0 28px rgba(29,158,117,.75),0 4px 16px rgba(0,0,0,.3);transition:transform .12s;" onmousedown="this.style.transform='scale(.92)'" onmouseup="this.style.transform='scale(1)'">
+          <svg width="26" height="26" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="10" stroke="white" stroke-width="2.5"/><circle cx="14" cy="14" r="5" fill="white"/></svg>
+        </div>
+        <button onclick="runDemo()" style="background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.2);border-radius:12px;padding:10px 16px;color:#fff;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">Demo</button>
+      </div>
+      <div id="noCam">
+        <div style="font-size:48px;margin-bottom:16px;">📷</div>
+        <div style="color:var(--ink);font-size:16px;font-weight:700;margin-bottom:8px;">Camera Access Needed</div>
+        <div style="color:var(--mu);font-size:13px;line-height:1.5;margin-bottom:18px;">Allow camera in Chrome, or use Demo Mode.</div>
+        <div style="background:var(--sf);border-radius:14px;padding:14px;text-align:left;margin-bottom:20px;width:100%;font-size:12px;line-height:1.9;border:1px solid var(--br);color:var(--mu);">1. Open <strong style="color:var(--g);">localhost:8080</strong><br>2. Click 🔒 → Allow Camera<br>3. Refresh this page</div>
+        <button class="btn" style="margin-bottom:10px;" onclick="runDemo()">Try Demo Scan</button>
+        <button class="btn2" onclick="goTo('scHome')">Go Back</button>
+      </div>
+      <div class="nav" id="navCam"></div>
+    </div>
+
+    <!-- ANALYZING -->
+    <div class="screen" id="scAnalyze" style="background:var(--sf);align-items:center;justify-content:center;padding:28px;">
+      <div style="position:relative;width:64px;height:64px;margin-bottom:28px;"><div class="ring-outer"></div><div class="ring-inner"></div></div>
+      <div style="color:var(--ink);font-size:18px;font-weight:700;margin-bottom:6px;letter-spacing:-.4px;text-align:center;">Analyzing Product</div>
+      <div style="color:var(--fa);font-size:13px;margin-bottom:32px;text-align:center;line-height:1.5;">Cross-referencing 1,800+<br>fraud patterns</div>
+      <div style="width:100%;max-width:260px;">
+        <div class="astep" id="as1"><div class="adot"></div><div class="atxt">Identifying product type</div></div>
+        <div class="astep" id="as2"><div class="adot"></div><div class="atxt">Verifying seller credentials</div></div>
+        <div class="astep" id="as3"><div class="adot"></div><div class="atxt">Analyzing review authenticity</div></div>
+        <div class="astep" id="as4"><div class="adot"></div><div class="atxt">Checking price history</div></div>
+        <div class="astep" id="as5"><div class="adot"></div><div class="atxt">Generating safety score</div></div>
+      </div>
+    </div>
+
+    <!-- RESULT -->
+    <div class="screen" id="scResult">
+      <div style="padding:46px 18px 12px;display:flex;align-items:center;gap:12px;flex-shrink:0;background:var(--bg);border-bottom:1px solid var(--br);">
+        <button onclick="goTo('scHome')" class="icon-btn" style="font-size:15px;color:var(--ink);">←</button>
+        <span style="color:var(--ink);font-size:15px;font-weight:600;flex:1;letter-spacing:-.2px;">Scan Result</span>
+        <button onclick="toast('Saved to history ✓','success')" class="icon-btn"><svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M5 10.5L8.5 14L15 7" stroke="var(--g)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="10" r="8.5" stroke="var(--g)" stroke-width="1.5"/></svg></button>
+      </div>
+      <div style="flex:1;overflow-y:auto;scrollbar-width:none;padding:12px 0 90px;" id="resultBody"></div>
+      <div class="nav" id="navResult"></div>
+    </div>
+
+    <!-- BUG -->
+    <div class="screen" id="scBug" style="align-items:center;justify-content:center;padding:28px;text-align:center;">
+      <div style="font-size:50px;margin-bottom:16px;">🐛</div>
+      <div style="color:var(--ink);font-size:17px;font-weight:700;margin-bottom:8px;">Something went wrong</div>
+      <div style="color:var(--mu);font-size:13px;line-height:1.6;margin-bottom:14px;" id="bugMsg"></div>
+      <div class="card" style="text-align:left;margin-bottom:10px;"><div style="color:var(--g);font-size:11px;font-weight:700;margin-bottom:6px;text-transform:uppercase;letter-spacing:.8px;">Error Details</div><div style="color:var(--mu);font-size:11px;font-family:'DM Mono',monospace;word-break:break-all;line-height:1.5;" id="bugDetail">—</div></div>
+      <div class="card" style="text-align:left;margin-bottom:20px;"><div style="color:var(--g);font-size:11px;font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:.8px;">Quick Fixes</div><div style="color:var(--mu);font-size:12px;line-height:2.0;">① Tap the camera button again<br>② Allow camera when prompted<br>③ Check camera permissions in ⚙️ Settings</div></div>
+      <button class="btn" style="margin-bottom:10px;" onclick="runDemo()">Demo Scan Instead</button>
+      <button class="btn2" onclick="goTo('scHome')">Back to Home</button>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="screen" id="scHistory">
+      <div class="scroll" style="padding-top:44px;padding-bottom:90px;">
+        <div class="ph"><span class="page-title">My Scans</span><span class="tag tb" style="padding:5px 10px;">47 total</span></div>
+        <div class="filter-scroll">
+          <button onclick="setFilter(this)" class="f-chip on">All (47)</button>
+          <button onclick="setFilter(this)" class="f-chip">Safe (35)</button>
+          <button onclick="setFilter(this)" class="f-chip">Caution (3)</button>
+          <button onclick="setFilter(this)" class="f-chip">Dangerous (9)</button>
+        </div>
+        <div style="display:flex;gap:8px;padding:0 14px;margin-bottom:14px;">
+          <div style="flex:1;background:var(--sf);border-radius:12px;padding:12px 10px;text-align:center;box-shadow:var(--sh);"><div style="font-size:18px;font-weight:700;font-family:'DM Mono',monospace;color:var(--g);">47</div><div style="font-size:9px;font-weight:600;color:var(--fa);text-transform:uppercase;letter-spacing:.5px;margin-top:3px;">Total</div></div>
+          <div style="flex:1;background:var(--sf);border-radius:12px;padding:12px 10px;text-align:center;box-shadow:var(--sh);"><div style="font-size:18px;font-weight:700;font-family:'DM Mono',monospace;color:var(--am);">3</div><div style="font-size:9px;font-weight:600;color:var(--fa);text-transform:uppercase;letter-spacing:.5px;margin-top:3px;">Caution</div></div>
+          <div style="flex:1;background:var(--sf);border-radius:12px;padding:12px 10px;text-align:center;box-shadow:var(--sh);"><div style="font-size:18px;font-weight:700;font-family:'DM Mono',monospace;color:var(--re);">9</div><div style="font-size:9px;font-weight:600;color:var(--fa);text-transform:uppercase;letter-spacing:.5px;margin-top:3px;">Flagged</div></div>
+        </div>
+        <div class="sh">Today</div>
+        <div class="hcard" onclick="viewResult('earbuds')"><div style="width:44px;height:44px;background:var(--bg);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🎧</div><div style="flex:1;min-width:0;"><div style="color:var(--ink);font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Wireless Earbuds Pro X</div><div style="color:var(--fa);font-size:11px;margin-top:2px;">Amazon · 2 mins ago</div><div style="display:flex;gap:5px;margin-top:5px;"><span class="tag tg">Safe</span><span class="tag tgr">Electronics</span></div></div><div class="ri-sc sc-h">92%</div></div>
+        <div class="hcard" onclick="viewResult('cable')"><div style="width:44px;height:44px;background:var(--bg);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🔌</div><div style="flex:1;min-width:0;"><div style="color:var(--ink);font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Budget USB-C Cable 3-Pack</div><div style="color:var(--fa);font-size:11px;margin-top:2px;">Amazon · 14 mins ago</div><div style="display:flex;gap:5px;margin-top:5px;"><span class="tag tr">Dangerous</span><span class="tag tgr">Accessories</span></div></div><div class="ri-sc sc-l">34%</div></div>
+        <div class="hcard" onclick="viewResult('cream')"><div style="width:44px;height:44px;background:var(--bg);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🧴</div><div style="flex:1;min-width:0;"><div style="color:var(--ink);font-size:13px;font-weight:500;">Organic Face Cream SPF 50</div><div style="color:var(--fa);font-size:11px;margin-top:2px;">Amazon · 1 hr ago</div><div style="display:flex;gap:5px;margin-top:5px;"><span class="tag tg">Safe</span><span class="tag tgr">Beauty</span></div></div><div class="ri-sc sc-h">95%</div></div>
+        <div class="sh">Yesterday</div>
+        <div class="hcard" onclick="viewResult('watch')"><div style="width:44px;height:44px;background:var(--bg);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">⌚</div><div style="flex:1;min-width:0;"><div style="color:var(--ink);font-size:13px;font-weight:500;">Smart Watch Series 5 Pro</div><div style="color:var(--fa);font-size:11px;margin-top:2px;">Amazon · Yesterday 3pm</div><div style="display:flex;gap:5px;margin-top:5px;"><span class="tag tg">Safe</span><span class="tag tgr">Wearables</span></div></div><div class="ri-sc sc-h">88%</div></div>
+        <div class="hcard"><div style="width:44px;height:44px;background:var(--bg);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">👟</div><div style="flex:1;min-width:0;"><div style="color:var(--ink);font-size:13px;font-weight:500;">Nike Air Max 270</div><div style="color:var(--fa);font-size:11px;margin-top:2px;">eBay · Yesterday 11am</div><div style="display:flex;gap:5px;margin-top:5px;"><span class="tag ty">Caution</span><span class="tag tgr">Shoes</span></div></div><div class="ri-sc sc-m">61%</div></div>
+        <div class="sh">This Week</div>
+        <div class="hcard"><div style="width:44px;height:44px;background:var(--bg);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">💊</div><div style="flex:1;min-width:0;"><div style="color:var(--ink);font-size:13px;font-weight:500;">Vitamin D3 5000IU</div><div style="color:var(--fa);font-size:11px;margin-top:2px;">Amazon · Mon 9am</div><div style="display:flex;gap:5px;margin-top:5px;"><span class="tag tg">Safe</span><span class="tag tgr">Health</span></div></div><div class="ri-sc sc-h">91%</div></div>
+        <div class="hcard"><div style="width:44px;height:44px;background:var(--bg);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🖥️</div><div style="flex:1;min-width:0;"><div style="color:var(--ink);font-size:13px;font-weight:500;">4K Monitor 27" IPS</div><div style="color:var(--fa);font-size:11px;margin-top:2px;">Walmart · Sun 2pm</div><div style="display:flex;gap:5px;margin-top:5px;"><span class="tag tr">Dangerous</span><span class="tag tgr">Electronics</span></div></div><div class="ri-sc sc-l">28%</div></div>
+        <div style="height:10px;"></div>
+      </div>
+      <div class="nav" id="navHistory"></div>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="screen" id="scReports">
+      <div class="scroll" style="padding-top:44px;padding-bottom:90px;">
+        <div class="ph"><span class="page-title">Reports</span><span class="tag tb" style="padding:5px 10px;font-size:10px;">30 days</span></div>
+        <div class="stat-grid" style="margin-bottom:10px;">
+          <div class="stat-card"><div class="stat-val" style="color:var(--g);">47</div><div class="stat-lbl">Scans</div></div>
+          <div class="stat-card"><div class="stat-val" style="color:var(--g);">$1,240</div><div class="stat-lbl">Saved</div></div>
+          <div class="stat-card"><div class="stat-val">92%</div><div class="stat-lbl">Avg Score</div></div>
+          <div class="stat-card"><div class="stat-val" style="color:var(--re);">9</div><div class="stat-lbl">Flagged</div></div>
+        </div>
+        <div class="sh">Avg Product Price History</div>
+        <div class="chart-box">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2px;">
+            <div><div class="chart-price-big">$89.99</div><div class="chart-delta up" id="rpt-delta">▲ +$3.50 (4.1%) this month</div></div>
+            <div style="font-size:10px;color:var(--fa);font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Avg Scan Price</div>
+          </div>
+          <div class="range-tabs"><button class="rt" onclick="rptRange(this,0)">1W</button><button class="rt on" onclick="rptRange(this,1)">1M</button><button class="rt" onclick="rptRange(this,2)">3M</button><button class="rt" onclick="rptRange(this,3)">6M</button><button class="rt" onclick="rptRange(this,4)">1Y</button></div>
+          <svg class="pchart" id="rpt-chart" viewBox="0 0 260 88"></svg>
+          <div style="display:flex;justify-content:space-between;margin-top:4px;"><span style="font-size:10px;color:var(--fa);" id="rpt-l0">Mar 1</span><span style="font-size:10px;color:var(--fa);" id="rpt-l1">Mar 25</span></div>
+        </div>
+        <div class="sh">Safety Score Distribution</div>
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;"><span style="color:var(--ink);font-size:14px;font-weight:600;">Past 30 Days</span><span style="color:var(--fa);font-size:11px;">47 scans</span></div>
+          <div style="display:flex;flex-direction:column;gap:11px;">
+            <div style="display:flex;align-items:center;gap:10px;"><span style="color:var(--mu);font-size:11px;width:54px;text-align:right;flex-shrink:0;">90–100</span><div class="bc-track"><div class="bc-fill" style="width:0%;background:var(--g);" data-w="68%"></div></div><span style="color:var(--ink);font-size:11px;width:20px;font-weight:600;font-family:'DM Mono',monospace;">32</span></div>
+            <div style="display:flex;align-items:center;gap:10px;"><span style="color:var(--mu);font-size:11px;width:54px;text-align:right;flex-shrink:0;">70–89</span><div class="bc-track"><div class="bc-fill" style="width:0%;background:#5dcaa5;" data-w="17%"></div></div><span style="color:var(--ink);font-size:11px;width:20px;font-weight:600;font-family:'DM Mono',monospace;">8</span></div>
+            <div style="display:flex;align-items:center;gap:10px;"><span style="color:var(--mu);font-size:11px;width:54px;text-align:right;flex-shrink:0;">40–69</span><div class="bc-track"><div class="bc-fill" style="width:0%;background:var(--am);" data-w="9%"></div></div><span style="color:var(--ink);font-size:11px;width:20px;font-weight:600;font-family:'DM Mono',monospace;">4</span></div>
+            <div style="display:flex;align-items:center;gap:10px;"><span style="color:var(--mu);font-size:11px;width:54px;text-align:right;flex-shrink:0;">0–39</span><div class="bc-track"><div class="bc-fill" style="width:0%;background:var(--re);" data-w="6%"></div></div><span style="color:var(--ink);font-size:11px;width:20px;font-weight:600;font-family:'DM Mono',monospace;">3</span></div>
+          </div>
+        </div>
+        <div class="sh">Top Categories</div>
+        <div class="card">
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;align-items:center;gap:10px;"><span style="font-size:16px;">🔌</span><div style="flex:1;"><div style="color:var(--ink);font-size:12px;font-weight:500;margin-bottom:4px;">Electronics</div><div class="bc-track"><div class="bc-fill" style="width:78%;background:var(--bl);"></div></div></div><span style="font-size:11px;color:var(--mu);font-family:'DM Mono',monospace;font-weight:600;">18</span></div>
+            <div style="display:flex;align-items:center;gap:10px;"><span style="font-size:16px;">🧴</span><div style="flex:1;"><div style="color:var(--ink);font-size:12px;font-weight:500;margin-bottom:4px;">Beauty</div><div class="bc-track"><div class="bc-fill" style="width:38%;background:#EC4899;"></div></div></div><span style="font-size:11px;color:var(--mu);font-family:'DM Mono',monospace;font-weight:600;">9</span></div>
+            <div style="display:flex;align-items:center;gap:10px;"><span style="font-size:16px;">👕</span><div style="flex:1;"><div style="color:var(--ink);font-size:12px;font-weight:500;margin-bottom:4px;">Clothing</div><div class="bc-track"><div class="bc-fill" style="width:30%;background:#8B5CF6;"></div></div></div><span style="font-size:11px;color:var(--mu);font-family:'DM Mono',monospace;font-weight:600;">7</span></div>
+            <div style="display:flex;align-items:center;gap:10px;"><span style="font-size:16px;">💊</span><div style="flex:1;"><div style="color:var(--ink);font-size:12px;font-weight:500;margin-bottom:4px;">Health</div><div class="bc-track"><div class="bc-fill" style="width:22%;background:var(--g);"></div></div></div><span style="font-size:11px;color:var(--mu);font-family:'DM Mono',monospace;font-weight:600;">5</span></div>
+          </div>
+        </div>
+        <div class="sh">AI Insights</div>
+        <div class="card" style="padding:0;">
+          <div style="display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-bottom:1px solid var(--dv);"><div style="width:30px;height:30px;background:rgba(29,158,117,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">💰</div><div><div style="color:var(--ink);font-size:12px;font-weight:500;margin-bottom:3px;">Saved $1,240 this month</div><div style="color:var(--mu);font-size:11px;line-height:1.4;">You avoided 9 suspicious purchases totaling $1,240 in estimated losses.</div></div></div>
+          <div style="display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-bottom:1px solid var(--dv);"><div style="width:30px;height:30px;background:rgba(245,158,11,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">⚠️</div><div><div style="color:var(--ink);font-size:12px;font-weight:500;margin-bottom:3px;">Electronics most at risk</div><div style="color:var(--mu);font-size:11px;line-height:1.4;">67% of your flagged items are electronics — stay extra cautious.</div></div></div>
+          <div style="display:flex;gap:12px;align-items:flex-start;padding:14px 16px;"><div style="width:30px;height:30px;background:rgba(59,130,246,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">📈</div><div><div style="color:var(--ink);font-size:12px;font-weight:500;margin-bottom:3px;">Safety score improving</div><div style="color:var(--mu);font-size:11px;line-height:1.4;">Avg score up from 84% → 92% this month. Keep it up!</div></div></div>
+        </div>
+        <div style="height:10px;"></div>
+      </div>
+      <div class="nav" id="navReports"></div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="screen" id="scProfile">
+      <div class="scroll" style="padding-top:44px;padding-bottom:90px;">
+        <div class="ph"><span class="page-title">Profile</span></div>
+        <div class="profile-hero">
+          <div style="width:58px;height:58px;border-radius:50%;background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.28);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;margin:0 auto 10px;font-family:'DM Mono',monospace;" id="prof-av">A</div>
+          <div style="color:#fff;font-size:16px;font-weight:700;margin-bottom:2px;letter-spacing:-.3px;" id="prof-name">Anghelo Araujo</div>
+          <div style="color:rgba(255,255,255,.58);font-size:11px;margin-bottom:16px;" id="prof-email">angheloaraujo@gmail.com</div>
+          <div style="background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:17px;">🛡️</span><div><div style="color:#fff;font-size:12px;font-weight:600;">ShopSherpa Pro</div><div style="color:rgba(255,255,255,.52);font-size:10px;">Member since Jan 2026</div></div></div>
+            <div style="background:#fff;color:#083328;font-size:10px;font-weight:700;padding:3px 9px;border-radius:6px;font-family:'DM Mono',monospace;">PRO</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;padding:0 14px;margin-bottom:6px;">
+          <div style="flex:1;background:var(--sf);border-radius:12px;padding:12px 10px;text-align:center;box-shadow:var(--sh);"><div style="font-size:18px;font-weight:700;font-family:'DM Mono',monospace;color:var(--g);">47</div><div style="font-size:9px;font-weight:600;color:var(--fa);margin-top:3px;text-transform:uppercase;letter-spacing:.5px;">Scans</div></div>
+          <div style="flex:1;background:var(--sf);border-radius:12px;padding:12px 10px;text-align:center;box-shadow:var(--sh);"><div style="font-size:18px;font-weight:700;font-family:'DM Mono',monospace;color:var(--re);">9</div><div style="font-size:9px;font-weight:600;color:var(--fa);margin-top:3px;text-transform:uppercase;letter-spacing:.5px;">Flagged</div></div>
+          <div style="flex:1;background:var(--sf);border-radius:12px;padding:12px 10px;text-align:center;box-shadow:var(--sh);"><div style="font-size:18px;font-weight:700;font-family:'DM Mono',monospace;color:var(--g);">$1.2K</div><div style="font-size:9px;font-weight:600;color:var(--g);margin-top:3px;text-transform:uppercase;letter-spacing:.5px;">Saved</div></div>
+        </div>
+        <div class="sh" style="margin-top:4px;">Refer & Earn</div>
+        <div class="ref-card">
+          <div style="color:rgba(255,255,255,.45);font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">🎁 1 INVITE = 1 MONTH FREE</div>
+          <div style="color:#fff;font-size:16px;font-weight:700;margin-bottom:5px;letter-spacing:-.3px;">Share ShopSherpa</div>
+          <div style="color:rgba(255,255,255,.62);font-size:12px;line-height:1.5;">You + your friend both get Pro free. <strong style="color:#fff;">3 friends</strong> referred so far.</div>
+          <div class="ref-code"><div style="color:rgba(255,255,255,.5);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;">Your Referral Code</div><div style="color:#fff;font-size:19px;font-weight:700;font-family:'DM Mono',monospace;letter-spacing:4px;">SHERPA-A7X</div></div>
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <button onclick="copyRef()" id="copy-ref-btn" style="flex:1;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:10px;padding:10px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">📋 Copy Code</button>
+            <button onclick="toast('Share sheet opening...','success')" style="flex:1;background:#fff;border:none;border-radius:10px;padding:10px;color:#083328;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">Share →</button>
+          </div>
+        </div>
+        <div class="sh">Account</div>
+        <div class="mi-list">
+          <div class="mi"><div class="mi-ic" style="background:rgba(29,158,117,.1);">👤</div><div style="flex:1;"><div style="color:var(--ink);font-size:13px;font-weight:500;">Personal Info</div><div style="color:var(--fa);font-size:11px;margin-top:1px;" id="prof-email-mi">angheloaraujo@gmail.com</div></div><span style="color:#D1D5DB;font-size:16px;">›</span></div>
+          <div class="mi" onclick="openPaywall()"><div class="mi-ic" style="background:rgba(245,158,11,.1);">💳</div><div style="flex:1;"><div style="color:var(--ink);font-size:13px;font-weight:500;">Subscription</div><div style="color:var(--fa);font-size:11px;margin-top:1px;">Pro · $6.99/mo</div></div><div style="background:var(--g);color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:5px;margin-right:6px;font-family:'DM Mono',monospace;">PRO</div><span style="color:#D1D5DB;font-size:16px;">›</span></div>
+          <div class="mi"><div class="mi-ic" style="background:rgba(59,130,246,.1);">🔒</div><div style="flex:1;"><div style="color:var(--ink);font-size:13px;font-weight:500;">Security & Privacy</div><div style="color:var(--fa);font-size:11px;margin-top:1px;">Password, 2FA, biometrics</div></div><span style="color:#D1D5DB;font-size:16px;">›</span></div>
+          <div class="mi" onclick="goTo('scAlerts')"><div class="mi-ic" style="background:rgba(29,158,117,.1);">🔔</div><div style="flex:1;"><div style="color:var(--ink);font-size:13px;font-weight:500;">Price Alerts</div><div style="color:var(--fa);font-size:11px;margin-top:1px;">4 products tracked</div></div><span style="color:#D1D5DB;font-size:16px;">›</span></div>
+        </div>
+        <div class="sh">Notifications</div>
+        <div class="card" style="padding:0;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--dv);"><div><div style="color:var(--ink);font-size:13px;font-weight:500;">Fraud Alerts</div><div style="color:var(--fa);font-size:11px;margin-top:1px;">Instant notification on scams</div></div><div class="tog on" onclick="this.classList.toggle('on')"><div class="tog-thumb"></div></div></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--dv);"><div><div style="color:var(--ink);font-size:13px;font-weight:500;">Price Drop Alerts</div><div style="color:var(--fa);font-size:11px;margin-top:1px;">Watchlist notifications</div></div><div class="tog on" onclick="this.classList.toggle('on')"><div class="tog-thumb"></div></div></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--dv);"><div><div style="color:var(--ink);font-size:13px;font-weight:500;">Weekly Report</div><div style="color:var(--fa);font-size:11px;margin-top:1px;">Digest every Sunday</div></div><div class="tog" onclick="this.classList.toggle('on')"><div class="tog-thumb"></div></div></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;"><div><div style="color:var(--ink);font-size:13px;font-weight:500;">Haptic Feedback</div><div style="color:var(--fa);font-size:11px;margin-top:1px;">Vibrate on scan result</div></div><div class="tog on" onclick="this.classList.toggle('on')"><div class="tog-thumb"></div></div></div>
+        </div>
+        <div class="sh">Support</div>
+        <div class="mi-list">
+          <div class="mi" onclick="toast('Opening Help Center...')"><div class="mi-ic" style="background:rgba(59,130,246,.1);">❓</div><div style="flex:1;"><div style="color:var(--ink);font-size:13px;font-weight:500;">Help Center</div><div style="color:var(--fa);font-size:11px;margin-top:1px;">FAQs, guides, tutorials</div></div><span style="color:#D1D5DB;font-size:16px;">›</span></div>
+          <div class="mi" onclick="toast('Thanks! ⭐ Opening App Store...')"><div class="mi-ic" style="background:rgba(245,158,11,.1);">⭐</div><div style="flex:1;"><div style="color:var(--ink);font-size:13px;font-weight:500;">Rate ShopSherpa</div><div style="color:var(--fa);font-size:11px;margin-top:1px;">Leave a review</div></div><span style="color:#D1D5DB;font-size:16px;">›</span></div>
+          <div class="mi" onclick="doSignOut()"><div class="mi-ic" style="background:rgba(239,68,68,.1);">🚪</div><div style="flex:1;"><div style="color:var(--re);font-size:13px;font-weight:500;">Sign Out</div><div style="color:var(--fa);font-size:11px;margin-top:1px;" id="prof-email-so">angheloaraujo@gmail.com</div></div><span style="color:#D1D5DB;font-size:16px;">›</span></div>
+        </div>
+        <div style="padding:14px 18px;text-align:center;"><div style="color:var(--fa);font-size:10px;">ShopSherpa v2.1.0 — Beta</div><div style="color:var(--fa);font-size:10px;margin-top:2px;">Built for shoppers, not retailers 🛡️</div></div>
+      </div>
+      <div class="nav" id="navProfile"></div>
+    </div>
+
+    <!-- SELLER -->
+    <div class="screen" id="scSeller">
+      <div style="padding:46px 18px 12px;display:flex;align-items:center;gap:12px;flex-shrink:0;background:var(--bg);border-bottom:1px solid var(--br);">
+        <button onclick="goTo('scHome')" class="icon-btn" style="font-size:15px;color:var(--ink);">←</button>
+        <span style="color:var(--ink);font-size:15px;font-weight:600;flex:1;">Seller Profile</span>
+        <span class="tag tr" style="padding:5px 10px;">High Risk</span>
+      </div>
+      <div class="scroll" style="padding-bottom:80px;">
+        <div style="background:#FFF1F1;border-bottom:1px solid rgba(239,68,68,.1);padding:20px 18px;text-align:center;">
+          <div style="width:56px;height:56px;border-radius:16px;background:rgba(239,68,68,.1);border:2px solid rgba(239,68,68,.18);display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 10px;">🏪</div>
+          <div style="color:var(--ink);font-size:17px;font-weight:700;margin-bottom:2px;letter-spacing:-.3px;">ShopDirect99</div>
+          <div style="color:var(--fa);font-size:11px;margin-bottom:12px;">Amazon Marketplace · ID: SD99-7821</div>
+          <div style="display:flex;justify-content:center;gap:6px;flex-wrap:wrap;"><span class="tag tr">⚠️ ShopSherpa Flagged</span><span class="tag tgr">Age: 3 weeks</span></div>
+        </div>
+        <div style="padding:16px 14px 0;">
+          <div class="card" style="margin:0 0 10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;"><div><div style="color:var(--ink);font-size:14px;font-weight:600;">Seller Risk Score</div><div style="color:var(--fa);font-size:11px;margin-top:2px;">14 fraud signals detected</div></div><div style="text-align:right;"><div style="font-size:34px;font-weight:700;font-family:'DM Mono',monospace;color:var(--re);line-height:1;">87</div><div style="font-size:10px;color:var(--re);font-weight:700;letter-spacing:.5px;">HIGH RISK</div></div></div>
+            <div style="height:9px;background:var(--bg);border-radius:5px;overflow:hidden;margin-bottom:6px;"><div style="width:87%;height:100%;background:linear-gradient(90deg,var(--am),var(--re));border-radius:5px;"></div></div>
+            <div style="display:flex;justify-content:space-between;"><span style="font-size:10px;color:var(--fa);">Safe</span><span style="font-size:10px;color:var(--re);font-weight:700;">87 / 100 Risk</span><span style="font-size:10px;color:var(--fa);">Dangerous</span></div>
+          </div>
+        </div>
+        <div class="sh">Red Flags Detected</div>
+        <div class="surface-row" style="margin:0 14px 10px;">
+          <div class="mi"><div class="mi-ic" style="background:rgba(239,68,68,.1);">📅</div><div><div style="color:var(--ink);font-size:13px;font-weight:500;">New Account</div><div style="color:var(--mu);font-size:11px;margin-top:2px;">Created only 3 weeks ago</div></div></div>
+          <div class="mi"><div class="mi-ic" style="background:rgba(239,68,68,.1);">⭐</div><div><div style="color:var(--ink);font-size:13px;font-weight:500;">Zero Verified Reviews</div><div style="color:var(--mu);font-size:11px;margin-top:2px;">No verified purchase history on record</div></div></div>
+          <div class="mi"><div class="mi-ic" style="background:rgba(239,68,68,.1);">💸</div><div><div style="color:var(--ink);font-size:13px;font-weight:500;">Prices 74% Below Market</div><div style="color:var(--mu);font-size:11px;margin-top:2px;">Classic counterfeit pricing signal</div></div></div>
+          <div class="mi"><div class="mi-ic" style="background:rgba(239,68,68,.1);">🤖</div><div><div style="color:var(--ink);font-size:13px;font-weight:500;">Bot Review Pattern</div><div style="color:var(--mu);font-size:11px;margin-top:2px;">67% of reviews from new accounts in burst</div></div></div>
+        </div>
+        <div class="sh">Listed Products (3)</div>
+        <div class="surface-row" style="margin:0 14px 14px;">
+          <div class="ri" onclick="viewResult('cable')"><div class="ri-ic">🔌</div><div style="flex:1;min-width:0;"><div class="ri-name">Budget USB-C Cable 3-Pack</div><div class="ri-meta">$3.99 · You scanned 14 mins ago</div></div><div class="ri-sc sc-l">34%</div></div>
+          <div class="ri"><div class="ri-ic">🔋</div><div style="flex:1;min-width:0;"><div class="ri-name">Portable Charger 20000mAh</div><div class="ri-meta">$9.99 · Market avg: $29.99</div></div><div class="ri-sc sc-l">28%</div></div>
+          <div class="ri"><div class="ri-ic">🎮</div><div style="flex:1;min-width:0;"><div class="ri-name">Gaming Controller "PS5"</div><div class="ri-meta">$12.99 · Likely counterfeit</div></div><div class="ri-sc sc-l">19%</div></div>
+        </div>
+        <div style="padding:0 14px 8px;"><button class="btn" style="background:var(--re);" onclick="toast('Seller blocked and reported ✓','success');goTo('scHome')">⚠️ Report & Avoid This Seller</button></div>
+        <div style="padding:0 14px 16px;"><button class="btn2" onclick="goTo('scHome')">Back to Home</button></div>
+      </div>
+    </div>
+
+    <!-- PRICE ALERTS -->
+    <div class="screen" id="scAlerts">
+      <div style="padding:46px 18px 12px;display:flex;align-items:center;gap:12px;flex-shrink:0;background:var(--bg);border-bottom:1px solid var(--br);">
+        <button onclick="goTo('scProfile')" class="icon-btn" style="font-size:15px;color:var(--ink);">←</button>
+        <span style="color:var(--ink);font-size:15px;font-weight:600;flex:1;">Price Alerts</span>
+        <button onclick="toast('Add alert feature coming soon 🔔')" style="background:var(--g);color:#fff;border:none;border-radius:9px;padding:7px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">+ Add</button>
+      </div>
+      <div class="scroll" style="padding-bottom:80px;">
+        <div style="padding:12px 14px 6px;display:flex;justify-content:space-between;align-items:center;"><span style="font-size:12px;color:var(--mu);">Watching <strong style="color:var(--ink);">4 products</strong></span><span class="tag tg">1 triggered</span></div>
+        <div class="alert-card" style="border-left:3px solid var(--g);margin-top:8px;">
+          <div class="alert-ic">⌚</div>
+          <div style="flex:1;min-width:0;"><div style="color:var(--ink);font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Smart Watch Series 5 Pro</div><div style="display:flex;align-items:center;gap:6px;margin-top:4px;"><span style="color:var(--fa);font-size:11px;text-decoration:line-through;">$219.99</span><span style="color:var(--g);font-size:14px;font-weight:700;font-family:'DM Mono',monospace;">$189.99</span><span class="tag tg" style="font-size:9px;">↓ 14%</span></div><div style="color:var(--g);font-size:10px;font-weight:600;margin-top:3px;">🔔 Alert triggered 1 hr ago</div></div>
+          <button onclick="viewResult('watch')" style="background:var(--g);color:#fff;border:none;border-radius:9px;padding:8px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;flex-shrink:0;">View</button>
+        </div>
+        <div class="alert-card"><div class="alert-ic">🎧</div><div style="flex:1;min-width:0;"><div style="color:var(--ink);font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Wireless Earbuds Pro X</div><div style="display:flex;align-items:center;gap:6px;margin-top:4px;"><span style="color:var(--ink);font-size:13px;font-weight:700;font-family:'DM Mono',monospace;">$89.99</span><span class="tag tgr" style="font-size:9px;">Watching</span></div><div style="color:var(--fa);font-size:10px;margin-top:3px;">Alert when below $80.00</div></div><div style="text-align:right;"><div style="color:var(--fa);font-size:10px;margin-bottom:4px;">Target</div><div style="color:var(--ink);font-size:12px;font-weight:700;font-family:'DM Mono',monospace;">$80</div></div></div>
+        <div class="alert-card"><div class="alert-ic">💻</div><div style="flex:1;min-width:0;"><div style="color:var(--ink);font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">MacBook Air M3</div><div style="display:flex;align-items:center;gap:6px;margin-top:4px;"><span style="color:var(--ink);font-size:13px;font-weight:700;font-family:'DM Mono',monospace;">$1,099</span><span class="tag tgr" style="font-size:9px;">Watching</span></div><div style="color:var(--fa);font-size:10px;margin-top:3px;">Alert when below $999.00</div></div><div style="text-align:right;"><div style="color:var(--fa);font-size:10px;margin-bottom:4px;">Target</div><div style="color:var(--ink);font-size:12px;font-weight:700;font-family:'DM Mono',monospace;">$999</div></div></div>
+        <div class="alert-card"><div class="alert-ic">👟</div><div style="flex:1;min-width:0;"><div style="color:var(--ink);font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Nike Air Max 270</div><div style="display:flex;align-items:center;gap:6px;margin-top:4px;"><span style="color:var(--ink);font-size:13px;font-weight:700;font-family:'DM Mono',monospace;">$145.00</span><span class="tag ty" style="font-size:9px;">↑ 5%</span></div><div style="color:var(--fa);font-size:10px;margin-top:3px;">Alert when below $120.00</div></div><div style="text-align:right;"><div style="color:var(--fa);font-size:10px;margin-bottom:4px;">Target</div><div style="color:var(--ink);font-size:12px;font-weight:700;font-family:'DM Mono',monospace;">$120</div></div></div>
+        <div style="background:linear-gradient(135deg,var(--gdk),#1a7a5e);border-radius:16px;padding:16px;margin:8px 14px 10px;">
+          <div style="color:rgba(255,255,255,.5);font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">✦ PRO ONLY</div>
+          <div style="color:#fff;font-size:14px;font-weight:700;margin-bottom:5px;">Unlimited Price Alerts</div>
+          <div style="color:rgba(255,255,255,.62);font-size:12px;line-height:1.5;margin-bottom:12px;">Free tier limited to 3 alerts. Upgrade to track unlimited products across Amazon, eBay, Walmart.</div>
+          <button onclick="openPaywall()" style="background:#fff;color:#083328;border:none;border-radius:10px;padding:10px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">Upgrade to Pro →</button>
+        </div>
+        <div style="height:10px;"></div>
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div class="notif-panel" id="notifPanel" onclick="if(event.target===this)closeNotif()">
+      <div class="notif-drawer">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <span style="color:var(--ink);font-size:16px;font-weight:700;">Notifications</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <button onclick="toast('All marked as read')" class="ghost-btn" style="color:var(--g);font-size:11px;font-weight:600;padding:4px;">Mark all read</button>
+            <button onclick="closeNotif()" style="width:28px;height:28px;background:var(--bg);border-radius:50%;border:none;color:var(--mu);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+          </div>
+        </div>
+        <div class="nitem unread" onclick="closeNotif();goTo('scSeller')"><div style="width:34px;height:34px;border-radius:10px;background:rgba(239,68,68,.08);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">🚨</div><div><div style="color:var(--ink);font-size:12px;line-height:1.45;font-weight:500;">High-risk seller <strong style="color:var(--re);">ShopDirect99</strong> flagged in your recent scan.</div><div style="color:var(--fa);font-size:10px;margin-top:4px;">2 mins ago</div></div></div>
+        <div class="nitem unread" onclick="closeNotif();viewResult('earbuds')"><div style="width:34px;height:34px;border-radius:10px;background:rgba(29,158,117,.08);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">✅</div><div><div style="color:var(--ink);font-size:12px;line-height:1.45;">Wireless Earbuds Pro X passed all checks — <strong>92%</strong>.</div><div style="color:var(--fa);font-size:10px;margin-top:4px;">5 mins ago</div></div></div>
+        <div class="nitem" onclick="closeNotif();goTo('scAlerts')"><div style="width:34px;height:34px;border-radius:10px;background:rgba(29,158,117,.08);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">💰</div><div><div style="color:var(--ink);font-size:12px;line-height:1.45;"><strong>Price Drop!</strong> Smart Watch now $189.99 — down $30 from your target.</div><div style="color:var(--fa);font-size:10px;margin-top:4px;">1 hr ago</div></div></div>
+        <div class="nitem" onclick="closeNotif();openPaywall()"><div style="width:34px;height:34px;border-radius:10px;background:rgba(245,158,11,.08);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">⚡</div><div><div style="color:var(--ink);font-size:12px;line-height:1.45;">You've used <strong>4 of 5</strong> free scans. Upgrade for unlimited.</div><div style="color:var(--fa);font-size:10px;margin-top:4px;">2 hrs ago</div></div></div>
+        <div class="nitem" onclick="closeNotif();goTo('scReports')"><div style="width:34px;height:34px;border-radius:10px;background:rgba(59,130,246,.08);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">📊</div><div><div style="color:var(--ink);font-size:12px;line-height:1.45;">Weekly report ready: <strong>47 scans</strong>, $1.2K saved, 92% avg score.</div><div style="color:var(--fa);font-size:10px;margin-top:4px;">2 hrs ago</div></div></div>
+      </div>
+    </div>
+
+    <!-- PAYWALL -->
+    <div class="paywall-overlay" id="paywallOverlay" onclick="if(event.target===this)activatePro()">
+      <div class="paywall-sheet">
+        <div style="text-align:center;margin-bottom:6px;">
+          <div style="width:52px;height:52px;background:linear-gradient(135deg,var(--g),var(--gdk));border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:20px;margin:0 auto 12px;">🛡️</div>
+          <div style="color:var(--ink);font-size:19px;font-weight:700;margin-bottom:5px;letter-spacing:-.4px;">Upgrade to Pro</div>
+          <div style="color:var(--mu);font-size:12px;line-height:1.55;margin-bottom:16px;">Everything you need to shop safely, without limits.</div>
+        </div>
+        <div style="background:var(--bg);border-radius:14px;padding:12px 14px;margin-bottom:14px;">
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;gap:9px;"><div style="width:18px;height:18px;background:rgba(29,158,117,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--g);font-weight:700;flex-shrink:0;">✓</div><span style="color:var(--ink);font-size:12px;font-weight:500;">Unlimited AI product scans</span><span style="color:var(--fa);font-size:11px;margin-left:auto;">vs 5/mo</span></div>
+            <div style="display:flex;align-items:center;gap:9px;"><div style="width:18px;height:18px;background:rgba(29,158,117,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--g);font-weight:700;flex-shrink:0;">✓</div><span style="color:var(--ink);font-size:12px;font-weight:500;">Unlimited price drop alerts</span><span style="color:var(--fa);font-size:11px;margin-left:auto;">vs 3 free</span></div>
+            <div style="display:flex;align-items:center;gap:9px;"><div style="width:18px;height:18px;background:rgba(29,158,117,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--g);font-weight:700;flex-shrink:0;">✓</div><span style="color:var(--ink);font-size:12px;font-weight:500;">Full seller risk profiles</span></div>
+            <div style="display:flex;align-items:center;gap:9px;"><div style="width:18px;height:18px;background:rgba(29,158,117,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--g);font-weight:700;flex-shrink:0;">✓</div><span style="color:var(--ink);font-size:12px;font-weight:500;">Weekly fraud digest reports</span></div>
+            <div style="display:flex;align-items:center;gap:9px;"><div style="width:18px;height:18px;background:rgba(29,158,117,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--g);font-weight:700;flex-shrink:0;">✓</div><span style="color:var(--ink);font-size:12px;font-weight:500;">Priority real-time scam alerts</span></div>
+          </div>
+        </div>
+        <div class="plan-option selected" id="planA" onclick="selPlan('planA','planM')">
+          <div class="plan-badge">BEST VALUE</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;"><div><div style="color:var(--ink);font-size:13px;font-weight:600;">Annual Plan</div><div style="color:var(--fa);font-size:11px;margin-top:2px;">$4.99/mo · billed $59.88/yr</div><div style="color:var(--g);font-size:10px;font-weight:600;margin-top:3px;">Save $24 vs monthly</div></div><div style="text-align:right;"><div style="color:var(--g);font-size:17px;font-weight:700;font-family:'DM Mono',monospace;">$4.99</div><div style="color:var(--fa);font-size:10px;">/ month</div></div></div>
+        </div>
+        <div class="plan-option" id="planM" onclick="selPlan('planM','planA')">
+          <div style="display:flex;justify-content:space-between;align-items:center;"><div><div style="color:var(--ink);font-size:13px;font-weight:600;">Monthly Plan</div><div style="color:var(--fa);font-size:11px;margin-top:2px;">Billed monthly, cancel anytime</div></div><div style="text-align:right;"><div style="color:var(--ink);font-size:17px;font-weight:700;font-family:'DM Mono',monospace;">$6.99</div><div style="color:var(--fa);font-size:10px;">/ month</div></div></div>
+        </div>
+        <button onclick="activatePro()" class="btn" style="margin-top:6px;">Start Free 7-Day Trial →</button>
+        <div style="text-align:center;margin-top:8px;color:var(--fa);font-size:11px;line-height:1.5;">No charge for 7 days · Cancel anytime<br>18% of users convert after first fraud alert</div>
+      </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
+
+  </div><!-- sw -->
+</div><!-- phone -->
+<script>
+/* Force full-screen on any real mobile device */
+(function(){
+  var mobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)||('ontouchstart' in window&&window.innerWidth<=900);
+  if(mobile){document.documentElement.style.setProperty('--is-mobile','1');document.body.style.padding='0';document.body.style.background='var(--gdk,#083328)';}
+})();
+var S={authed:false,user:null,scansUsed:4,scansMax:5};
+try{var sv=localStorage.getItem('ss');if(sv){var sp=JSON.parse(sv);S.authed=sp.authed||false;S.user=sp.user||null;S.scansUsed=sp.scansUsed||4;}}catch(e){}
+function save(){try{localStorage.setItem('ss',JSON.stringify({authed:S.authed,user:S.user,scansUsed:S.scansUsed}));}catch(e){}}
+
+var SCREENS=['scHome','scCam','scAnalyze','scResult','scBug','scHistory','scReports','scProfile','scSeller','scAlerts'];
+var camStream=null;
+var NAV_IDS={scHome:'navHome',scCam:'navCam',scResult:'navResult',scHistory:'navHistory',scReports:'navReports',scProfile:'navProfile'};
+var NAV_DEFS=[{l:'Home',s:'scHome'},{l:'Scan',s:'scCam'},{l:'History',s:'scHistory'},{l:'Reports',s:'scReports'},{l:'Profile',s:'scProfile'}];
+
+function niSvg(s,c){
+  if(s==='scHome')return'<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="7" height="7" rx="2" fill="'+c+'"/><rect x="11" y="2" width="7" height="7" rx="2" fill="'+c+'" opacity=".35"/><rect x="2" y="11" width="7" height="7" rx="2" fill="'+c+'" opacity=".35"/><rect x="11" y="11" width="7" height="7" rx="2" fill="'+c+'" opacity=".35"/></svg>';
+  if(s==='scCam')return'<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="5" width="16" height="12" rx="2" stroke="'+c+'" stroke-width="1.6"/><circle cx="10" cy="11" r="2.8" stroke="'+c+'" stroke-width="1.6"/><path d="M7 5V4a1 1 0 011-1h4a1 1 0 011 1v1" stroke="'+c+'" stroke-width="1.6"/></svg>';
+  if(s==='scHistory')return'<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="'+c+'" stroke-width="1.6"/><path d="M6 8h8M6 11h5" stroke="'+c+'" stroke-width="1.6" stroke-linecap="round"/></svg>';
+  if(s==='scReports')return'<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 17V10M8 17V7M13 17V12M18 17V4" stroke="'+c+'" stroke-width="1.6" stroke-linecap="round"/></svg>';
+  if(s==='scProfile')return'<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7.5" r="3.5" stroke="'+c+'" stroke-width="1.6"/><path d="M3 18c0-3.866 3.134-5.5 7-5.5s7 1.634 7 5.5" stroke="'+c+'" stroke-width="1.6" stroke-linecap="round"/></svg>';
+  return'';
+}
+
+function buildNavs(){
+  Object.entries(NAV_IDS).forEach(function(p){
+    var par=p[0],id=p[1],el=document.getElementById(id);if(!el)return;
+    var h='';
+    NAV_DEFS.forEach(function(n){
+      var act=(n.s===par)||(par==='scResult'&&n.s==='scCam');
+      var col=act?'#1d9e75':'#9CA3AF';
+      h+='<div class="ni" onclick="navTo(\''+n.s+'\')"><div style="width:22px;height:22px;display:flex;align-items:center;justify-content:center;">'+niSvg(n.s,col)+'</div><span class="ni-lbl'+(act?' a':'')+'">'+n.l+'</span>'+(n.s==='scProfile'?'<div class="ni-pip" id="prof-pip" style="display:none;"></div>':'')+'</div>';
+    });
+    el.innerHTML=h;
+  });
+}
+
+function goTo(id){
+  SCREENS.forEach(function(s){var el=document.getElementById(s);if(el){el.classList.remove('on');el.style.display='none';}});
+  var t=document.getElementById(id);
+  if(t){t.style.display='flex';requestAnimationFrame(function(){t.classList.add('on');});}
+  var hideNav=id==='scCam'||id==='scAnalyze';
+  document.querySelectorAll('.nav').forEach(function(n){n.style.display=hideNav?'none':'';});
+}
+function navTo(s){
+  if(s==='scCam'){if(S.scansUsed>=S.scansMax){openPaywall();return;}openCam();return;}
+  stopCam();goTo(s);
+}
+
+/* ONBOARDING */
+var obIdx=0;
+function obGo(to){
+  document.getElementById('obs'+obIdx).classList.add('out');
+  setTimeout(function(){var n=document.getElementById('obs'+to);n.classList.remove('out');obIdx=to;},80);
+}
+function obDone(){
+  var ob=document.getElementById('onboarding');
+  ob.style.transition='opacity .4s';ob.style.opacity='0';
+  setTimeout(function(){ob.style.display='none';if(!S.authed)showAuth('authSI');},400);
+  try{localStorage.setItem('ss_ob','1');}catch(e){}
+}
+
+/* AUTH */
+function showAuth(id){
+  ['authSI','authSU'].forEach(function(aid){var el=document.getElementById(aid);if(el){el.classList.add('hidden');}});
+  var el=document.getElementById(id);
+  if(el){el.style.display='flex';el.classList.remove('hidden');}
+}
+function hideAuth(){
+  ['authSI','authSU'].forEach(function(aid){var el=document.getElementById(aid);if(el){el.classList.add('hidden');el.style.display='none';}});
+}
+function togglePass(inputId,btn){
+  var inp=document.getElementById(inputId);
+  if(inp.type==='password'){inp.type='text';btn.textContent='🙈';}else{inp.type='password';btn.textContent='👁';}
+}
+function pwStrength(v){
+  var s=0;
+  if(v.length>=8)s++;if(/[A-Z]/.test(v))s++;if(/[0-9]/.test(v))s++;if(/[^A-Za-z0-9]/.test(v))s++;
+  var cols=['#EF4444','#F59E0B','#F59E0B','#1d9e75'];
+  for(var i=0;i<4;i++){var el=document.getElementById('ps'+i);if(el)el.style.background=i<s?cols[s-1]:'var(--br)';}
+}
+document.addEventListener('DOMContentLoaded',function(){
+  var pp=document.getElementById('su-pass');if(pp)pp.addEventListener('input',function(){pwStrength(this.value);});
+});
+
+function doSignIn(){
+  var em=document.getElementById('si-email').value.trim();
+  var pw=document.getElementById('si-pass').value;
+  if(!em||!pw){toast('Please fill in all fields','error');return;}
+  var btn=document.getElementById('si-btn');btn.textContent='Signing in...';btn.disabled=true;
+  setTimeout(function(){
+    S.authed=true;S.user={name:em.split('@')[0].replace(/[._]/g,' ')||'User',email:em};
+    save();updateProfileUI();hideAuth();goTo('scHome');
+    toast('Welcome back! 👋','success');
+    btn.textContent='Sign In';btn.disabled=false;
+  },1100);
+}
+function doSignUp(){
+  var nm=document.getElementById('su-name').value.trim();
+  var em=document.getElementById('su-email').value.trim();
+  var pw=document.getElementById('su-pass').value;
+  if(!nm||!em||!pw){toast('Please fill in all fields','error');return;}
+  if(pw.length<8){toast('Password must be 8+ characters','error');return;}
+  setTimeout(function(){
+    S.authed=true;S.user={name:nm,email:em};
+    save();updateProfileUI();hideAuth();goTo('scHome');
+    toast('Account created! Welcome 🎉','success');
+  },1100);
+}
+function doSignOut(){S.authed=false;S.user=null;save();showAuth('authSI');toast('Signed out');}
+function updateProfileUI(){
+  if(!S.user)return;
+  var n=S.user.name||'',e=S.user.email||'';
+  var pn=document.getElementById('prof-name');if(pn)pn.textContent=n;
+  var av=document.getElementById('prof-av');if(av)av.textContent=(n[0]||'U').toUpperCase();
+  ['prof-email','prof-email-mi','prof-email-so'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=e;});
+  var h=new Date().getHours(),gr=h<12?'Good morning':h<18?'Good afternoon':'Good evening';
+  var hg=document.getElementById('home-greet');if(hg)hg.textContent=gr+', '+(n.split(' ')[0]||'there')+' 👋';
+}
+
+/* SCAN COUNTER */
+function useScan(){S.scansUsed=Math.min(S.scansUsed+1,S.scansMax);save();refreshScanUI();}
+function refreshScanUI(){
+  var used=S.scansUsed,max=S.scansMax,pct=(used/max)*100;
+  var lbl=document.getElementById('scan-lbl');if(lbl)lbl.textContent=used+' / '+max+' used';
+  var fill=document.getElementById('scan-fill');
+  if(fill){fill.style.width=pct+'%';fill.className='sl-fill'+(pct>=100?' crit':pct>=80?' warn':'');}
+}
+
+/* CAMERA */
+async function openCam(){
+  goTo('scCam');
+  var vid=document.getElementById('camVid'),nc=document.getElementById('noCam');
+  vid.style.display='block';nc.style.display='none';
+  try{
+    camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280}}});
+    vid.srcObject=camStream;await vid.play();
+  }catch(e){vid.style.display='none';nc.style.display='flex';}
+}
+function stopCam(){if(camStream){camStream.getTracks().forEach(function(t){t.stop();});camStream=null;}var v=document.getElementById('camVid');if(v)v.srcObject=null;}
+
+/* AI SCAN */
+async function doAIScan(){
+  var vid=document.getElementById('camVid'),canvas=document.getElementById('snapCanvas');
+  if(!camStream||!vid||vid.readyState<2||!vid.videoWidth){showBug('Camera not ready.','Tap the camera icon again, or allow camera access in your browser settings.');return;}
+  var sw=document.getElementById('sw');
+  var fl=document.createElement('div');fl.style.cssText='position:absolute;inset:0;background:#fff;opacity:.8;z-index:999;border-radius:44px;pointer-events:none;transition:opacity .5s;';
+  sw.appendChild(fl);setTimeout(function(){fl.style.opacity='0';setTimeout(function(){fl.remove();},500);},80);
+  useScan();
+  try{
+    canvas.width=vid.videoWidth;canvas.height=vid.videoHeight;
+    canvas.getContext('2d').drawImage(vid,0,0);
+    var b64=canvas.toDataURL('image/jpeg',0.8).split(',')[1];
+    if(!b64||b64.length<100)throw new Error('Canvas empty.');
+    stopCam();goTo('scAnalyze');animSteps();
+    var res=await fetch('/api/scan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:b64})});
+    var data=await res.json();
+    if(!res.ok||data.error)throw new Error(data.error||'Server '+res.status);
+    setTimeout(function(){document.getElementById('as5').className='astep done';renderAI(data);goTo('scResult');},3200);
+  }catch(e){
+    setTimeout(function(){
+      document.getElementById('as5').className='astep done';
+      renderAI({productName:'Product Scanned',brand:'Unknown',emoji:'📦',estimatedPrice:'N/A',score:72,verdict:'safe',checks:[{s:'pass',t:'No Major Red Flags',d:'No immediate fraud signals detected.'},{s:'warn',t:'Seller Unverified',d:'Cross-check seller ratings before purchasing.'},{s:'pass',t:'Category Risk Low',d:'Below-average fraud rates for this product type.'},{s:'warn',t:'Price Unconfirmed',d:'Compare price on multiple platforms.'}],summary:'Appears generally safe — verify seller before purchasing.',apiNote:'Scan error: '+String(e).slice(0,100)});
+      goTo('scResult');
+    },3200);
+  }
+}
+function runDemo(){if(S.scansUsed>=S.scansMax){openPaywall();return;}useScan();stopCam();goTo('scAnalyze');animSteps();setTimeout(function(){document.getElementById('as5').className='astep done';renderStatic('earbuds');goTo('scResult');},3200);}
+function animSteps(){
+  var ids=['as1','as2','as3','as4','as5'];
+  ids.forEach(function(id){document.getElementById(id).className='astep';});
+  ids.forEach(function(id,i){setTimeout(function(){if(i>0)document.getElementById(ids[i-1]).className='astep done';document.getElementById(id).className='astep on';},i*580);});
+}
+function showBug(msg,detail){stopCam();document.getElementById('bugMsg').textContent=msg;document.getElementById('bugDetail').textContent=detail||'';goTo('scBug');}
+
+/* PRODUCTS & CHARTS */
+var P={
+  earbuds:{emoji:'🎧',name:'Wireless Earbuds Pro X',seller:'TechGadgets_US · Amazon.com',score:92,verdict:'safe',price:'$89.99',checks:[{s:'pass',t:'Reviews Authentic',d:'94% verified purchases — no bot patterns'},{s:'pass',t:'Seller Credible',d:'Active since 2019 · 4.7★ with 12,400+ ratings'},{s:'warn',t:'Price Alert',d:'8% above 30-day average — not the best moment'},{s:'pass',t:'No Fraud Patterns',d:'Clear across 1,800+ fraud checks'}],summary:'Trusted product from a verified seller. Safe to purchase — consider waiting for a slight price dip.'},
+  cable:{emoji:'🔌',name:'Budget USB-C Cable 3-Pack',seller:'ShopDirect99 · Amazon.com',score:34,verdict:'danger',price:'$3.99',checks:[{s:'fail',t:'Fake Reviews',d:'67% of reviews show suspicious burst activity from new accounts'},{s:'fail',t:'Seller Red Flag',d:'Account created 3 weeks ago — zero verified history'},{s:'warn',t:'Price Too Low',d:'74% below market average — classic counterfeit signal'},{s:'fail',t:'3 Fraud Patterns',d:'Matches known counterfeit electronics profiles'}],summary:'Do NOT purchase — multiple critical fraud indicators from a newly-created, unverified seller.'},
+  cream:{emoji:'🧴',name:'Organic Face Cream SPF 50',seller:'NaturalGlow Co · Amazon.com',score:95,verdict:'safe',price:'$24.99',checks:[{s:'pass',t:'Reviews Authentic',d:'98% verified purchases — highly trusted'},{s:'pass',t:'Verified Brand',d:'Amazon verified brand since 2017 · 4.9★'},{s:'pass',t:'Fair Price',d:'Within 2% of 90-day average price'},{s:'pass',t:'No Fraud Patterns',d:'Clean across all checks'}],summary:'Excellent product from a top-rated verified brand. One of the most trusted in its category.'},
+  watch:{emoji:'⌚',name:'Smart Watch Series 5 Pro',seller:'WearableTech_Hub · Amazon',score:88,verdict:'safe',price:'$189.99',checks:[{s:'pass',t:'Reviews Authentic',d:'89% verified purchase rate'},{s:'pass',t:'Seller Credible',d:'Active since 2020 · 4.6★ with 8,200+ ratings'},{s:'warn',t:'Recent Price Drop',d:'Just dropped 14% — actually a great time to buy'},{s:'pass',t:'No Fraud Patterns',d:'No suspicious patterns detected'}],summary:'Solid product from a credible seller. Recent 14% price drop makes this a good time to purchase.'}
+};
+var C={
+  safe:{'1W':{pts:[86,87,89,88,90,89,89.99],lo:'Mar 18',hi:'Mar 25',d:'+$3.99',up:true},'1M':{pts:[83,85,88,84,87,91,88,90,87,90,88,89,91,89,89.99],lo:'Mar 1',hi:'Mar 25',d:'+$6.99',up:true},'3M':{pts:[92,88,84,87,83,86,89,85,88,91,87,89,90,88,89.99],lo:'Jan 1',hi:'Mar 25',d:'-$2.01',up:false},'6M':{pts:[98,94,90,87,92,86,90,84,88,91,86,87,89,90,89.99],lo:'Sep 25',hi:'Mar 25',d:'-$8.01',up:false},'1Y':{pts:[75,80,86,82,88,94,90,86,84,89,86,88,90,88,89.99],lo:"Mar '24",hi:'Mar 25',d:'+$14.99',up:true}},
+  danger:{'1W':{pts:[30,28,32,27,29,28,27],lo:'Mar 18',hi:'Mar 25',d:'-$3.00',up:false},'1M':{pts:[42,40,37,39,34,38,31,35,29,33,27,31,29,27,27],lo:'Mar 1',hi:'Mar 25',d:'-$15.00',up:false},'3M':{pts:[55,50,48,46,42,40,38,36,32,35,30,32,28,30,27],lo:'Jan 1',hi:'Mar 25',d:'-$28.00',up:false},'6M':{pts:[80,72,65,60,55,50,48,44,40,38,35,32,30,28,27],lo:'Sep 25',hi:'Mar 25',d:'-$53.00',up:false},'1Y':{pts:[15,20,25,22,30,35,45,40,38,32,30,28,30,28,27],lo:"Mar '24",hi:'Mar 25',d:'+$12.00',up:true}},
+  warn:{'1W':{pts:[60,62,58,64,61,63,61],lo:'Mar 18',hi:'Mar 25',d:'+$1.00',up:true},'1M':{pts:[54,56,59,57,62,60,64,62,63,61,64,62,60,63,61],lo:'Mar 1',hi:'Mar 25',d:'+$7.00',up:true},'3M':{pts:[68,65,62,60,58,62,60,58,63,61,62,60,63,61,61],lo:'Jan 1',hi:'Mar 25',d:'-$7.00',up:false},'6M':{pts:[75,70,66,62,65,60,63,58,62,64,60,62,63,61,61],lo:'Sep 25',hi:'Mar 25',d:'-$14.00',up:false},'1Y':{pts:[42,48,55,52,58,65,62,58,60,64,60,62,63,61,61],lo:"Mar '24",hi:'Mar 25',d:'+$19.00',up:true}}
+};
+var curV='safe';
+
+function drawChart(id,pts,col){
+  var svg=document.getElementById(id);if(!svg)return;
+  var W=260,H=88,p=4,mn=Math.min.apply(null,pts),mx=Math.max.apply(null,pts),rng=mx-mn||1,n=pts.length;
+  var coords=pts.map(function(v,i){return[p+(i/(n-1))*(W-p*2),(p+(1-(v-mn)/rng)*(H-p*2))];});
+  var pd=coords.map(function(c,i){return(i===0?'M':'L')+c[0].toFixed(1)+','+c[1].toFixed(1);}).join(' ');
+  var fd=pd+' L'+coords[n-1][0].toFixed(1)+','+(H+4)+' L'+p+','+(H+4)+' Z';
+  var g='g'+id;
+  svg.innerHTML='<defs><linearGradient id="'+g+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+col+'" stop-opacity=".15"/><stop offset="100%" stop-color="'+col+'" stop-opacity="0"/></linearGradient></defs><path d="'+fd+'" fill="url(#'+g+')"/><path d="'+pd+'" fill="none" stroke="'+col+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="'+coords[n-1][0].toFixed(1)+'" cy="'+coords[n-1][1].toFixed(1)+'" r="3.5" fill="'+col+'"/>';
+}
+function resRange(btn,idx){
+  var rng=['1W','1M','3M','6M','1Y'],key=rng[idx],lbl={W:'past week','1M':'past month','3M':'past 3 mo','6M':'past 6 mo','1Y':'past year'};
+  btn.parentElement.querySelectorAll('.rt').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');
+  var d=(C[curV]||C.safe)[key]||(C.safe)[key];
+  drawChart('res-chart',d.pts,d.up?'#1d9e75':'#EF4444');
+  var dl=document.getElementById('res-delta'),l0=document.getElementById('res-l0'),l1=document.getElementById('res-l1');
+  if(dl){dl.textContent=(d.up?'▲ ':'▼ ')+d.d+' '+([,'past week','past month','past 3 mo','past 6 mo','past year'][idx]||'');dl.className='chart-delta '+(d.up?'up':'dn');}
+  if(l0)l0.textContent=d.lo;if(l1)l1.textContent=d.hi;
+}
+function rptRange(btn,idx){
+  var rpts={1:[88,87,89,88.5,90,89.5,89.99],2:[84,85,88,85,87,91,88,91,89,90,87,88,90,91,89.99],3:[92,88,84,87,83,86,89,85,88,91,87,89,90,88,89.99],4:[98,94,90,87,92,86,90,84,88,91,86,87,89,90,89.99],5:[75,80,86,82,88,94,90,86,84,89,86,88,90,88,89.99]};
+  var dels={1:{d:'+$1.50',up:true},2:{d:'+$3.50',up:true},3:{d:'-$2.00',up:false},4:{d:'-$8.00',up:false},5:{d:'+$12.00',up:true}};
+  var labs={1:['Mar 18','Mar 25'],2:['Mar 1','Mar 25'],3:['Jan 1','Mar 25'],4:['Sep 25','Mar 25'],5:["Mar '24",'Mar 25']};
+  var i=idx+1;
+  btn.parentElement.querySelectorAll('.rt').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');
+  var dt=dels[i];drawChart('rpt-chart',rpts[i],dt.up?'#1d9e75':'#EF4444');
+  var dl=document.getElementById('rpt-delta'),l0=document.getElementById('rpt-l0'),l1=document.getElementById('rpt-l1');
+  if(dl){dl.textContent=(dt.up?'▲ ':'▼ ')+dt.d+' '+(['past week','this month','past 3 mo','past 6 mo','past year'][idx]||'');dl.className='chart-delta '+(dt.up?'up':'dn');}
+  if(l0)l0.textContent=labs[i][0];if(l1)l1.textContent=labs[i][1];
+}
+
+/* RESULT RENDERING */
+function scCol(s){return s>=70?'col-green':s>=40?'col-amber':'col-red';}
+function hClass(v){return v==='safe'?'score-safe':v==='warn'?'score-warn':'score-danger';}
+function checksH(checks){
+  return(checks||[]).map(function(c){
+    var ic=c.s==='pass'?'ci-p':c.s==='warn'?'ci-w':'ci-f',sym=c.s==='pass'?'✓':c.s==='warn'?'!':'✕';
+    return'<div class="chk"><div class="ci '+ic+'">'+sym+'</div><div><div class="ct-t">'+(c.t||'')+'</div><div class="ct-s">'+(c.d||'')+'</div></div></div>';
+  }).join('');
+}
+function buildResult(emoji,name,seller,badge,score,verdict,checks,summary,note,price){
+  curV=verdict;
+  var sc=scCol(score),hc=hClass(verdict);
+  var vl=verdict==='safe'?'✓ Verified Safe':verdict==='warn'?'⚠ Use Caution':'✕ High Risk';
+  var vc=verdict==='safe'?'pill pg':verdict==='warn'?'pill pa':'pill pr';
+  var d=(C[verdict]||C.safe)['1M'];var col=d.up?'#1d9e75':'#EF4444';
+  var h='';
+  h+='<div class="card" style="display:flex;gap:14px;"><div style="width:54px;height:54px;background:var(--bg);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;">'+emoji+'</div><div style="min-width:0;flex:1;"><div style="color:var(--ink);font-size:13px;font-weight:600;line-height:1.3;margin-bottom:3px;">'+name+'</div><div style="color:var(--fa);font-size:11px;font-family:\'DM Mono\',monospace;margin-bottom:4px;">'+seller+'</div>'+(badge||'')+'</div></div>';
+  h+='<div class="score-hero '+hc+'"><div><div class="sh-num '+sc+'" id="rNum">0</div><div style="color:var(--mu);font-size:12px;margin-top:3px;">Safety Score</div></div><div style="text-align:right;"><div class="'+vc+'" style="margin-bottom:8px;">'+vl+'</div>'+(price?'<div style="font-size:16px;font-weight:700;font-family:\'DM Mono\',monospace;color:var(--ink);">'+price+'</div><div style="font-size:10px;color:var(--fa);">Est. Price</div>':'')+'</div></div>';
+  h+='<div class="sh" style="margin-top:2px;">Analysis</div>'+checksH(checks);
+  h+='<div class="sh" style="margin-top:6px;">Price History</div><div class="chart-box"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2px;"><div><div class="chart-price-big">'+(price||'$–')+'</div><div class="chart-delta '+(d.up?'up':'dn')+'" id="res-delta">'+(d.up?'▲ ':'▼ ')+d.d+' past month</div></div><div style="font-size:10px;color:var(--fa);font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Est. Market</div></div><div class="range-tabs"><button class="rt" onclick="resRange(this,0)">1W</button><button class="rt on" onclick="resRange(this,1)">1M</button><button class="rt" onclick="resRange(this,2)">3M</button><button class="rt" onclick="resRange(this,3)">6M</button><button class="rt" onclick="resRange(this,4)">1Y</button></div><svg class="pchart" id="res-chart" viewBox="0 0 260 88"></svg><div style="display:flex;justify-content:space-between;margin-top:4px;"><span id="res-l0" style="font-size:10px;color:var(--fa);">'+d.lo+'</span><span id="res-l1" style="font-size:10px;color:var(--fa);">'+d.hi+'</span></div></div>';
+  if(summary)h+='<div style="background:var(--sf);border-radius:12px;padding:13px;margin:0 14px 10px;color:var(--mu);font-size:12px;line-height:1.6;border-left:3px solid var(--g);box-shadow:var(--sh);">'+summary+'</div>';
+  if(note)h+='<div style="background:#FFFBEB;border-radius:10px;padding:10px 13px;margin:0 14px 10px;color:var(--am);font-size:11px;font-family:\'DM Mono\',monospace;word-break:break-all;border:1px solid rgba(245,158,11,.18);">'+note+'</div>';
+  if(verdict==='danger')h+='<div style="margin:0 14px 10px;"><button onclick="goTo(\'scSeller\')" style="width:100%;background:#FFF1F1;border:1.5px solid rgba(239,68,68,.2);border-radius:12px;padding:12px;color:var(--re);font-size:13px;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif;">⚠️ View Full Seller Risk Report →</button></div>';
+  h+='<div style="margin:0 14px 8px;"><button onclick="goTo(\'scAlerts\')" style="width:100%;background:#F0FDF9;border:1.5px solid rgba(29,158,117,.2);border-radius:12px;padding:12px;color:var(--g);font-size:13px;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif;">🔔 Track Price Drops →</button></div>';
+  h+='<div style="padding:0 14px 8px;"><button class="btn" onclick="navTo(\'scCam\')">Scan Another Product</button></div>';
+  h+='<div style="padding:0 14px 8px;"><button class="btn2" onclick="goTo(\'scHome\')">Back to Home</button></div><div style="height:20px;"></div>';
+  return h;
+}
+function renderAI(p){
+  var score=Math.max(0,Math.min(100,parseInt(p.score)||72));
+  var verdict=p.verdict||(score>=70?'safe':score>=40?'warn':'danger');
+  var badge='<div style="background:rgba(29,158,117,.1);border-radius:6px;padding:3px 8px;display:inline-block;margin-top:2px;"><span style="color:var(--g);font-size:10px;font-weight:700;">✦ CLAUDE AI DETECTED</span></div>';
+  document.getElementById('resultBody').innerHTML=buildResult(p.emoji||'📦',p.productName||'Product',(p.brand||'Unknown')+' · '+(p.estimatedPrice||'N/A'),badge,score,verdict,p.checks,p.summary||null,p.apiNote||null,p.estimatedPrice||null);
+  setTimeout(function(){var e=document.getElementById('rNum');if(e)e.textContent=score+'%';var d=(C[verdict]||C.safe)['1M'];drawChart('res-chart',d.pts,d.up?'#1d9e75':'#EF4444');},120);
+}
+function renderStatic(key){
+  var p=P[key]||P.earbuds;
+  document.getElementById('resultBody').innerHTML=buildResult(p.emoji,p.name,p.seller,null,p.score,p.verdict,p.checks,p.summary,null,p.price);
+  setTimeout(function(){var e=document.getElementById('rNum');if(e)e.textContent=p.score+'%';var d=(C[p.verdict]||C.safe)['1M'];drawChart('res-chart',d.pts,d.up?'#1d9e75':'#EF4444');},120);
+}
+function viewResult(key){renderStatic(key);goTo('scResult');}
+
+/* UI HELPERS */
+function setFilter(btn){btn.closest('div').querySelectorAll('button').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');}
+function openNotif(){document.getElementById('notifPanel').classList.add('open');}
+function closeNotif(){document.getElementById('notifPanel').classList.remove('open');}
+function openPaywall(){document.getElementById('paywallOverlay').classList.add('open');}
+function closePaywall(){document.getElementById('paywallOverlay').classList.remove('open');}
+function activatePro(){
+  S.scansMax=9999;S.isPro=true;save();
+  // Hide scan limit bar
+  var bar=document.getElementById('scan-limit-bar');if(bar)bar.style.display='none';
+  // Update scan label
+  var lbl=document.getElementById('scan-lbl');if(lbl)lbl.textContent='Unlimited';
+  var fill=document.getElementById('scan-fill');if(fill){fill.style.width='0%';fill.className='sl-fill';}
+  closePaywall();
+  toast('Pro activated! Unlimited scans unlocked 🛡️','success');
+}
+function selPlan(a,b){document.getElementById(a).classList.add('selected');document.getElementById(b).classList.remove('selected');}
+function copyRef(){try{navigator.clipboard.writeText('SHERPA-A7X');}catch(e){}var btn=document.getElementById('copy-ref-btn');if(btn){btn.textContent='✓ Copied!';setTimeout(function(){btn.textContent='📋 Copy Code';},2000);}toast('Code copied!','success');}
+
+var toastT;
+function toast(msg,type){
+  var el=document.getElementById('toast');if(!el)return;
+  clearTimeout(toastT);el.textContent=msg;el.className='toast'+(type?' '+type:'');
+  requestAnimationFrame(function(){requestAnimationFrame(function(){el.classList.add('show');});});
+  toastT=setTimeout(function(){el.classList.remove('show');},2400);
+}
+function updateClock(){var n=new Date(),h=n.getHours()%12||12,m=String(n.getMinutes()).padStart(2,'0');var el=document.getElementById('clk');if(el)el.textContent=h+':'+m;}
+
+/* SERVICE WORKER REGISTRATION */
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/sw.js').catch(function(){});
+}
+
+/* INIT */
+(function(){
+  try{
+    buildNavs();updateClock();setInterval(updateClock,1000);refreshScanUI();
+    if(S.user)updateProfileUI();
+    goTo('scHome');
+    setTimeout(function(){
+      drawChart('rpt-chart',[84,85,88,85,87,91,88,91,89,90,87,88,90,91,89.99],'#1d9e75');
+      document.querySelectorAll('.trend-fill[data-w]').forEach(function(el){setTimeout(function(){el.style.width=el.dataset.w;},500);});
+      document.querySelectorAll('.bc-fill[data-w]').forEach(function(el){setTimeout(function(){el.style.width=el.dataset.w;},600);});
+    },300);
+    try{
+      if(localStorage.getItem('ss_ob')==='1'){document.getElementById('onboarding').style.display='none';}
+      if(localStorage.getItem('ss_ob')==='1'&&S.authed){hideAuth();}
+    }catch(e){}
+  }catch(e){console.error(e);var h=document.getElementById('scHome');if(h){h.style.display='flex';h.classList.add('on');}}
+})();
+</script>
+</body>
+</html>
